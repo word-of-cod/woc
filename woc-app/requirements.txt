@@ -1,0 +1,8 @@
+Django>=5.2,<5.3
+gunicorn
+psycopg[binary]
+python-dotenv
+requests
+django-tailwind[reload]
+django-htmx
+whitenoise
