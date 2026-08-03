@@ -1,6 +1,0 @@
-Django>=5.0
-gunicorn
-psycopg[binary]
-python-dotenv
-requests
-django-tailwind
