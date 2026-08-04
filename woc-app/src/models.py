@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -18,6 +19,18 @@ class Player(models.Model):
     class Meta:
         db_table = 'players'
         ordering = ('name', 'player_id')
+
+    def __str__(self):
+        return self.name
+
+
+class Team(models.Model):
+    team_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=150, unique=True)
+
+    class Meta:
+        db_table = 'teams'
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -113,12 +126,46 @@ class Game(models.Model):
         related_name='games',
     )
     source = models.CharField(max_length=10, choices=GameSource.choices)
-    opponent = models.CharField(max_length=150)
+    team_one = models.ForeignKey(
+        Team,
+        on_delete=models.PROTECT,
+        related_name='games_as_team_one',
+    )
+    team_two = models.ForeignKey(
+        Team,
+        on_delete=models.PROTECT,
+        related_name='games_as_team_two',
+    )
     event_date = models.DateTimeField(db_index=True)
 
     class Meta:
         db_table = 'games'
         ordering = ('-event_date', '-game_id')
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(team_one=models.F('team_two')),
+                name='games_distinct_teams',
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+
+        if self.team_one_id and self.team_one_id == self.team_two_id:
+            raise ValidationError('A game must contain two different teams.')
+
+        if self.pool_entry_id and self.event_date:
+            stage = self.pool_entry.stage
+            game_date = self.event_date.date()
+
+            if game_date < stage.start_date or game_date > stage.end_date:
+                raise ValidationError(
+                    {'event_date': 'Game date must fall within its stage.'}
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     @property
     def stage(self):
@@ -134,7 +181,7 @@ class Game(models.Model):
 
     def __str__(self):
         return (
-            f'{self.opponent} - '
+            f'{self.team_one} vs. {self.team_two} - '
             f'{self.game_map} {self.mode} '
             f'({self.event_date:%Y-%m-%d})'
         )
@@ -145,32 +192,41 @@ class PlayerGameStat(models.Model):
     player = models.ForeignKey(
         Player,
         db_column='player_id',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='game_stats',
     )
     game = models.ForeignKey(
         Game,
         db_column='game_id',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='player_stats',
     )
     kills = models.PositiveIntegerField()
     deaths = models.PositiveIntegerField()
-    team = models.CharField(max_length=150)
+    team = models.ForeignKey(
+        Team,
+        db_column='team_id',
+        on_delete=models.PROTECT,
+        related_name='player_game_stats',
+    )
 
     class Meta:
         db_table = 'player_game_stats'
         ordering = ('game_id', 'player_id')
-        constraints = [
-            models.CheckConstraint(
-                condition=models.Q(kills__gte=0),
-                name='player_game_stats_kills_nonnegative',
-            ),
-            models.CheckConstraint(
-                condition=models.Q(deaths__gte=0),
-                name='player_game_stats_deaths_nonnegative',
-            ),
-        ]
+
+    def clean(self):
+        super().clean()
+
+        if self.game_id and self.team_id:
+            participant_ids = {self.game.team_one_id, self.game.team_two_id}
+            if self.team_id not in participant_ids:
+                raise ValidationError(
+                    {'team': 'The player team must participate in the game.'}
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.player} in game {self.game_id}'
@@ -181,13 +237,13 @@ class BettingLine(models.Model):
     player = models.ForeignKey(
         Player,
         db_column='player_id',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='betting_lines',
     )
     game = models.ForeignKey(
         Game,
         db_column='game_id',
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='betting_lines',
     )
     market = models.CharField(max_length=10, choices=BettingMarket.choices)
