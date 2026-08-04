@@ -10,12 +10,26 @@ def normalize_legacy_teams(apps, schema_editor):
     Game = apps.get_model('src', 'Game')
     PlayerGameStat = apps.get_model('src', 'PlayerGameStat')
 
+    team_cache = {}
+
+    def get_or_create_team(name):
+        key = name.strip().casefold()
+        if key in team_cache:
+            return team_cache[key]
+
+        team = Team.objects.filter(name__iexact=name).first()
+        if team is None:
+            team = Team.objects.create(name=name)
+
+        team_cache[key] = team
+        return team
+
     for game in Game.objects.all().iterator():
         opponent_name = (game.opponent_name or '').strip()
         if not opponent_name:
             opponent_name = f'{UNKNOWN_TEAM_NAME} Two'
 
-        team_two, _ = Team.objects.get_or_create(name=opponent_name)
+        team_two = get_or_create_team(opponent_name)
 
         stat_team_names = list(
             PlayerGameStat.objects.filter(game_id=game.pk)
@@ -34,7 +48,7 @@ def normalize_legacy_teams(apps, schema_editor):
             if other_team_names
             else f'{UNKNOWN_TEAM_NAME} One'
         )
-        team_one, _ = Team.objects.get_or_create(name=team_one_name)
+        team_one = get_or_create_team(team_one_name)
 
         game.team_one_id = team_one.pk
         game.team_two_id = team_two.pk
@@ -49,8 +63,7 @@ def normalize_legacy_teams(apps, schema_editor):
             elif legacy_name.casefold() == team_two.name.casefold():
                 stat.team_id = team_two.pk
             else:
-                legacy_team, _ = Team.objects.get_or_create(name=legacy_name)
-                stat.team_id = legacy_team.pk
+                stat.team_id = get_or_create_team(legacy_name).pk
             stat.save(update_fields=['team'])
 
 
