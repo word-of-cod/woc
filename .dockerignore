@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+.env
+.env.template
+*.pyc
+__pycache__
+**/__pycache__
+**/*.pyc
+node_modules
+run.sh
+run.bat
+README.md
+docker-compose.yaml
