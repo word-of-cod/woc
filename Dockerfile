@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY woc-app/ .
 
+RUN python manage.py tailwind build
 RUN python manage.py collectstatic --noinput
 
 RUN useradd --create-home appuser && chown -R appuser:appuser /app
