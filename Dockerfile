@@ -5,10 +5,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY woc-app/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY woc-app/ .
+
+RUN python manage.py collectstatic --noinput
+
+RUN useradd --create-home appuser && chown -R appuser:appuser /app
+USER appuser
 
 EXPOSE 8000
 
