@@ -12,6 +12,7 @@ env:
   POSTGRES_PASSWORD: woc
   POSTGRES_HOST: localhost
   POSTGRES_PORT: 5432
+  DJANGO_SECRET_KEY: ci-only-secret-key-not-used-in-production
 
 jobs:
   test:

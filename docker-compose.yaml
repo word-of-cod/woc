@@ -30,6 +30,7 @@ services:
       POSTGRES_PORT: 5432
       DJANGO_DEBUG: ${DJANGO_DEBUG}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
     ports:
       - "8000:8000"
     depends_on:
