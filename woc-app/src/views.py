@@ -1,5 +1,15 @@
 from django.shortcuts import render
 
+from .selectors import recent_games
+
 
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    games = recent_games(limit=20)
+
+    return render(
+        request,
+        'dashboard.html',
+        {
+            'games': games,
+        },
+    )
