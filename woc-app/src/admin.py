@@ -1,14 +1,26 @@
 from django.contrib import admin
 
 from .models import (
+    BettingLine,
     CompetitionStage,
     Game,
     GameMap,
     GameMode,
     Player,
+    PlayerGameStat,
     StageMapPoolEntry,
     Team,
 )
+
+
+class PlayerGameStatInline(admin.TabularInline):
+    model = PlayerGameStat
+    extra = 0
+
+
+class BettingLineInline(admin.TabularInline):
+    model = BettingLine
+    extra = 0
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
@@ -112,6 +124,7 @@ class GameAdmin(admin.ModelAdmin):
         'team_two',
     )
     date_hierarchy = 'event_date'
+    inlines = (PlayerGameStatInline, BettingLineInline)
 
     @admin.display(description='Map', ordering='pool_entry__game_map__name')
     def display_map(self, obj):

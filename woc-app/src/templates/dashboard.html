@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 {% for game in games %}
     <article>
         <h2>
@@ -28,3 +31,4 @@
 {% empty %}
     <p>No games have been recorded.</p>
 {% endfor %}
+{% endblock %}
