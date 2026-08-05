@@ -36,6 +36,13 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+BREAKINGPOINT_BASE_URL = os.environ.get(
+    'BREAKINGPOINT_BASE_URL',
+    'https://dfpiiufxcciujugzjvgx.supabase.co/rest/v1',
+)
+BREAKINGPOINT_API_KEY = os.environ.get('BREAKINGPOINT_API_KEY')
+BREAKINGPOINT_ACCESS_TOKEN = os.environ.get('BREAKINGPOINT_ACCESS_TOKEN')
+
 
 # Application definition
 

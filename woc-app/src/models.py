@@ -120,6 +120,7 @@ class Game(models.Model):
     source = models.CharField(max_length=10, choices=GameSource.choices)
     opponent = models.CharField(max_length=150)
     event_date = models.DateTimeField(db_index=True)
+    source_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
 
     class Meta:
         db_table = 'games'

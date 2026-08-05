@@ -15,6 +15,17 @@ from .models import (
 class PlayerGameStatInline(admin.TabularInline):
     model = PlayerGameStat
     extra = 0
+    raw_id_fields = ('game',)
+
+    def get_queryset(self, request):
+        return (
+            super().get_queryset(request)
+            .select_related(
+                'game__pool_entry__game_map',
+                'game__pool_entry__mode',
+                'game__pool_entry__stage',
+            )
+        )
 
 
 class BettingLineInline(admin.TabularInline):
@@ -25,6 +36,7 @@ class BettingLineInline(admin.TabularInline):
 class PlayerAdmin(admin.ModelAdmin):
     list_display = ('player_id', 'name')
     search_fields = ('name',)
+    inlines = (PlayerGameStatInline,)
 
 
 @admin.register(GameMap)
