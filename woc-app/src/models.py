@@ -8,8 +8,12 @@ class GameSource(models.TextChoices):
 
 
 class BettingMarket(models.TextChoices):
-    KILLS = 'KILLS', 'Kills'
-    KDR = 'KDR', 'Kill/death ratio'
+    MAP_1_KILLS = 'M1_KILLS', 'Map 1 kills'
+    MAP_2_KILLS = 'M2_KILLS', 'Map 2 kills'
+    MAP_3_KILLS = 'M3_KILLS', 'Map 3 kills'
+    MAP_1_DEATHS = 'M1_DEATHS', 'Map 1 deaths'
+    MAP_2_DEATHS = 'M2_DEATHS', 'Map 2 deaths'
+    MAP_3_DEATHS = 'M3_DEATHS', 'Map 3 deaths'
 
 
 class Player(models.Model):
@@ -19,18 +23,6 @@ class Player(models.Model):
     class Meta:
         db_table = 'players'
         ordering = ('name', 'player_id')
-
-    def __str__(self):
-        return self.name
-
-
-class Team(models.Model):
-    team_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, unique=True)
-
-    class Meta:
-        db_table = 'teams'
-        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -126,33 +118,15 @@ class Game(models.Model):
         related_name='games',
     )
     source = models.CharField(max_length=10, choices=GameSource.choices)
-    team_one = models.ForeignKey(
-        Team,
-        on_delete=models.PROTECT,
-        related_name='games_as_team_one',
-    )
-    team_two = models.ForeignKey(
-        Team,
-        on_delete=models.PROTECT,
-        related_name='games_as_team_two',
-    )
+    opponent = models.CharField(max_length=150)
     event_date = models.DateTimeField(db_index=True)
 
     class Meta:
         db_table = 'games'
         ordering = ('-event_date', '-game_id')
-        constraints = [
-            models.CheckConstraint(
-                condition=~models.Q(team_one=models.F('team_two')),
-                name='games_distinct_teams',
-            ),
-        ]
 
     def clean(self):
         super().clean()
-
-        if self.team_one_id and self.team_one_id == self.team_two_id:
-            raise ValidationError('A game must contain two different teams.')
 
         if self.pool_entry_id and self.event_date:
             stage = self.pool_entry.stage
@@ -181,7 +155,7 @@ class Game(models.Model):
 
     def __str__(self):
         return (
-            f'{self.team_one} vs. {self.team_two} - '
+            f'{self.opponent} - '
             f'{self.game_map} {self.mode} '
             f'({self.event_date:%Y-%m-%d})'
         )
@@ -203,26 +177,11 @@ class PlayerGameStat(models.Model):
     )
     kills = models.PositiveIntegerField()
     deaths = models.PositiveIntegerField()
-    team = models.ForeignKey(
-        Team,
-        db_column='team_id',
-        on_delete=models.PROTECT,
-        related_name='player_game_stats',
-    )
+    team = models.CharField(max_length=150)
 
     class Meta:
         db_table = 'player_game_stats'
         ordering = ('game_id', 'player_id')
-
-    def clean(self):
-        super().clean()
-
-        if self.game_id and self.team_id:
-            participant_ids = {self.game.team_one_id, self.game.team_two_id}
-            if self.team_id not in participant_ids:
-                raise ValidationError(
-                    {'team': 'The player team must participate in the game.'}
-                )
 
     def save(self, *args, **kwargs):
         self.full_clean()

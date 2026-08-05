@@ -14,7 +14,6 @@ from .models import (
     Player,
     PlayerGameStat,
     StageMapPoolEntry,
-    Team,
 )
 
 
@@ -26,17 +25,6 @@ def create_player(*, name: str) -> Player:
         raise ValueError('Player name cannot be empty.')
 
     return Player.objects.create(name=cleaned_name)
-
-
-@transaction.atomic
-def create_team(*, name: str) -> Team:
-    cleaned_name = name.strip()
-
-    if not cleaned_name:
-        raise ValueError('Team name cannot be empty.')
-
-    team, _created = Team.objects.get_or_create(name=cleaned_name)
-    return team
 
 
 @transaction.atomic
@@ -116,15 +104,18 @@ def create_game(
     *,
     pool_entry: StageMapPoolEntry,
     source: GameSource,
-    team_one: Team,
-    team_two: Team,
+    opponent: str,
     event_date: datetime,
 ) -> Game:
+    cleaned_opponent = opponent.strip()
+
+    if not cleaned_opponent:
+        raise ValueError('Opponent cannot be empty.')
+
     return Game.objects.create(
         pool_entry=pool_entry,
         source=source,
-        team_one=team_one,
-        team_two=team_two,
+        opponent=cleaned_opponent,
         event_date=event_date,
     )
 
@@ -136,7 +127,7 @@ def record_player_result(
     game: Game,
     kills: int,
     deaths: int,
-    team: Team,
+    team: str,
 ) -> PlayerGameStat:
     if kills < 0:
         raise ValueError('Kills cannot be negative.')
@@ -144,13 +135,18 @@ def record_player_result(
     if deaths < 0:
         raise ValueError('Deaths cannot be negative.')
 
+    cleaned_team = team.strip()
+
+    if not cleaned_team:
+        raise ValueError('Team cannot be empty.')
+
     result, _created = PlayerGameStat.objects.update_or_create(
         player=player,
         game=game,
         defaults={
             'kills': kills,
             'deaths': deaths,
-            'team': team,
+            'team': cleaned_team,
         },
     )
 

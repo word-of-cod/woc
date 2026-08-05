@@ -20,8 +20,6 @@ def get_game(*, game_id: int) -> Game:
             'pool_entry__stage',
             'pool_entry__game_map',
             'pool_entry__mode',
-            'team_one',
-            'team_two',
         )
 
         .get(game_id=game_id)
@@ -35,8 +33,6 @@ def recent_games(*, limit: int = 20) -> QuerySet[Game]:
             'pool_entry__stage',
             'pool_entry__game_map',
             'pool_entry__mode',
-            'team_one',
-            'team_two',
         )
         .prefetch_related(
             'player_stats__player',
@@ -57,8 +53,6 @@ def games_for_stage(
             'pool_entry__stage',
             'pool_entry__game_map',
             'pool_entry__mode',
-            'team_one',
-            'team_two',
         )
         .order_by('-event_date', '-game_id')
     )
@@ -96,7 +90,6 @@ def stats_for_game(
             'game__pool_entry',
             'game__pool_entry__game_map',
             'game__pool_entry__mode',
-            'team',
         )
         .order_by(
             '-kills',
@@ -120,7 +113,6 @@ def stats_for_player(
             'game__pool_entry__stage',
             'game__pool_entry__game_map',
             'game__pool_entry__mode',
-            'team',
         )
         .order_by('-game__event_date')
     )
