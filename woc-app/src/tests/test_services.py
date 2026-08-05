@@ -13,7 +13,6 @@ from src.services import (
     create_game_map,
     create_game_mode,
     create_player,
-    create_team,
     record_player_result,
     set_betting_line,
 )
@@ -21,8 +20,6 @@ from src.services import (
 
 class ServiceTests(TestCase):
     def setUp(self):
-        self.team_one = create_team(name=' Atlanta FaZe ')
-        self.team_two = create_team(name='OpTic Texas')
         self.player = create_player(name='Example Player')
         game_map = create_game_map(name='Hacienda')
         mode = create_game_mode(name='Hardpoint')
@@ -41,31 +38,48 @@ class ServiceTests(TestCase):
             datetime(2026, 1, 15, 19, 30)
         )
 
-    def test_create_team_normalizes_whitespace(self):
-        self.assertEqual(self.team_one.name, 'Atlanta FaZe')
-
-    def test_create_team_rejects_blank_name(self):
-        with self.assertRaises(ValueError):
-            create_team(name='   ')
-
     def test_create_game_rejects_date_outside_stage(self):
         with self.assertRaises(ValidationError):
             create_game(
                 pool_entry=self.pool_entry,
                 source=GameSource.ONLINE,
-                team_one=self.team_one,
-                team_two=self.team_two,
+                opponent='OpTic Texas',
                 event_date=timezone.make_aware(
                     datetime(2026, 3, 1, 12, 0)
                 ),
+            )
+
+    def test_create_game_rejects_blank_opponent(self):
+        with self.assertRaises(ValueError):
+            create_game(
+                pool_entry=self.pool_entry,
+                source=GameSource.ONLINE,
+                opponent='   ',
+                event_date=self.event_date,
+            )
+
+    def test_record_result_rejects_blank_team_name(self):
+        game = create_game(
+            pool_entry=self.pool_entry,
+            source=GameSource.ONLINE,
+            opponent='OpTic Texas',
+            event_date=self.event_date,
+        )
+
+        with self.assertRaises(ValueError):
+            record_player_result(
+                player=self.player,
+                game=game,
+                kills=20,
+                deaths=15,
+                team='   ',
             )
 
     def test_result_and_line_services_update_existing_records(self):
         game = create_game(
             pool_entry=self.pool_entry,
             source=GameSource.ONLINE,
-            team_one=self.team_one,
-            team_two=self.team_two,
+            opponent=' OpTic Texas ',
             event_date=self.event_date,
         )
 
@@ -74,25 +88,25 @@ class ServiceTests(TestCase):
             game=game,
             kills=20,
             deaths=15,
-            team=self.team_one,
+            team='Atlanta FaZe',
         )
         updated_stat = record_player_result(
             player=self.player,
             game=game,
             kills=25,
             deaths=14,
-            team=self.team_one,
+            team='Atlanta FaZe',
         )
         set_betting_line(
             player=self.player,
             game=game,
-            market=BettingMarket.KILLS,
+            market=BettingMarket.MAP_1_KILLS,
             line=Decimal('22.500'),
         )
         updated_line = set_betting_line(
             player=self.player,
             game=game,
-            market=BettingMarket.KILLS,
+            market=BettingMarket.MAP_1_KILLS,
             line=Decimal('23.500'),
         )
 

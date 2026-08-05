@@ -18,7 +18,6 @@ from src.models import (
     Player,
     PlayerGameStat,
     StageMapPoolEntry,
-    Team,
 )
 
 
@@ -27,10 +26,6 @@ class SchemaModelTests(TestCase):
         self.player = Player.objects.create(
             name="Example Player",
         )
-
-        self.team_one = Team.objects.create(name="Atlanta FaZe")
-        self.team_two = Team.objects.create(name="OpTic Texas")
-        self.other_team = Team.objects.create(name="Toronto KOI")
 
         self.game_map = GameMap.objects.create(
             name="Hacienda",
@@ -56,8 +51,7 @@ class SchemaModelTests(TestCase):
         self.game = Game.objects.create(
             pool_entry=self.pool_entry,
             source=GameSource.ONLINE,
-            team_one=self.team_one,
-            team_two=self.team_two,
+            opponent="OpTic Texas",
             event_date=timezone.make_aware(
                 datetime(2026, 1, 15, 19, 30)
             ),
@@ -115,7 +109,7 @@ class SchemaModelTests(TestCase):
             game=self.game,
             kills=25,
             deaths=18,
-            team=self.team_one,
+            team="Atlanta FaZe",
         )
 
         self.assertEqual(stat.kills, 25)
@@ -128,7 +122,7 @@ class SchemaModelTests(TestCase):
             game=self.game,
             kills=25,
             deaths=18,
-            team=self.team_one,
+            team="Atlanta FaZe",
         )
 
         with self.assertRaises(ValidationError):
@@ -137,14 +131,14 @@ class SchemaModelTests(TestCase):
                 game=self.game,
                 kills=30,
                 deaths=15,
-                team=self.team_one,
+                team="Atlanta FaZe",
             )
 
     def test_create_betting_line(self):
         betting_line = BettingLine.objects.create(
             player=self.player,
             game=self.game,
-            market=BettingMarket.KILLS,
+            market=BettingMarket.MAP_1_KILLS,
             line=Decimal("24.500"),
         )
 
@@ -157,7 +151,7 @@ class SchemaModelTests(TestCase):
         BettingLine.objects.create(
             player=self.player,
             game=self.game,
-            market=BettingMarket.KILLS,
+            market=BettingMarket.MAP_1_KILLS,
             line=Decimal("24.500"),
         )
 
@@ -166,40 +160,19 @@ class SchemaModelTests(TestCase):
                 BettingLine.objects.create(
                     player=self.player,
                     game=self.game,
-                    market=BettingMarket.KILLS,
+                    market=BettingMarket.MAP_1_KILLS,
                     line=Decimal("25.500"),
                 )
-
-    def test_game_teams_must_be_different(self):
-        with self.assertRaises(ValidationError):
-            Game.objects.create(
-                pool_entry=self.pool_entry,
-                source=GameSource.LAN,
-                team_one=self.team_one,
-                team_two=self.team_one,
-                event_date=self.game.event_date,
-            )
 
     def test_game_date_must_fall_within_stage(self):
         with self.assertRaises(ValidationError):
             Game.objects.create(
                 pool_entry=self.pool_entry,
                 source=GameSource.LAN,
-                team_one=self.team_one,
-                team_two=self.team_two,
+                opponent="OpTic Texas",
                 event_date=timezone.make_aware(
                     datetime(2026, 3, 1, 12, 0)
                 ),
-            )
-
-    def test_stat_team_must_participate_in_game(self):
-        with self.assertRaises(ValidationError):
-            PlayerGameStat.objects.create(
-                player=self.player,
-                game=self.game,
-                kills=10,
-                deaths=10,
-                team=self.other_team,
             )
 
     def test_historical_records_protect_player_and_game(self):
@@ -208,7 +181,7 @@ class SchemaModelTests(TestCase):
             game=self.game,
             kills=25,
             deaths=18,
-            team=self.team_one,
+            team="Atlanta FaZe",
         )
 
         with self.assertRaises(ProtectedError):

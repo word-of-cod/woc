@@ -7,7 +7,6 @@ from .models import (
     GameMode,
     Player,
     StageMapPoolEntry,
-    Team,
 )
 
 @admin.register(Player)
@@ -15,11 +14,6 @@ class PlayerAdmin(admin.ModelAdmin):
     list_display = ('player_id', 'name')
     search_fields = ('name',)
 
-
-@admin.register(Team)
-class TeamAdmin(admin.ModelAdmin):
-    list_display = ('team_id', 'name')
-    search_fields = ('name',)
 
 @admin.register(GameMap)
 class GameMapAdmin(admin.ModelAdmin):
@@ -80,8 +74,7 @@ class GameAdmin(admin.ModelAdmin):
     list_display = (
         'game_id',
         'event_date',
-        'team_one',
-        'team_two',
+        'opponent',
         'display_map',
         'display_mode',
         'display_stage',
@@ -89,16 +82,13 @@ class GameAdmin(admin.ModelAdmin):
     )
     list_filter = (
         'source',
-        'team_one',
-        'team_two',
         'pool_entry__stage__season',
         'pool_entry__stage',
         'pool_entry__game_map',
         'pool_entry__mode',
     )
     search_fields = (
-        'team_one__name',
-        'team_two__name',
+        'opponent',
         'pool_entry__game_map__name',
         'pool_entry__mode__name',
         'pool_entry__stage__name',
@@ -108,8 +98,6 @@ class GameAdmin(admin.ModelAdmin):
         'pool_entry__stage',
         'pool_entry__game_map',
         'pool_entry__mode',
-        'team_one',
-        'team_two',
     )
     date_hierarchy = 'event_date'
 
