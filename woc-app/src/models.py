@@ -188,6 +188,12 @@ class PlayerGameStat(models.Model):
         self.full_clean()
         return super().save(*args, **kwargs)
 
+    @property
+    def kill_death_ratio(self):
+        if self.deaths == 0:
+            return None
+        return self.kills / self.deaths
+
     def __str__(self):
         return f'{self.player} in game {self.game_id}'
 

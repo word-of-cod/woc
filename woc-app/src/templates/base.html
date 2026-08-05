@@ -27,8 +27,14 @@
 
             <!-- NAV LINKS -->
             <nav class="flex items-center gap-6 text-sm">
-                <a href="/" class="text-neutral-400 hover:text-white transition">Dashboard</a>
-                <a href="/matches/" class="text-neutral-400 hover:text-white transition">Matches</a>
+                <a href="{% url 'dashboard' %}"
+                   class="{% if request.resolver_match.url_name == 'dashboard' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
+                    Dashboard
+                </a>
+                <a href="{% url 'matches' %}"
+                   class="{% if request.resolver_match.url_name == 'matches' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
+                    Matches
+                </a>
                 <a href="/players/" class="text-neutral-400 hover:text-white transition">Players</a>
                 <a href="/teams/" class="text-neutral-400 hover:text-white transition">Teams</a>
             </nav>
