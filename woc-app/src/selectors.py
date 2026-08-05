@@ -28,6 +28,7 @@ def get_game(*, game_id: int) -> Game:
 def recent_games(*, limit: int = 20) -> QuerySet[Game]:
     return (
         Game.objects
+        .filter(source_id__isnull=False)
         .select_related(
             'pool_entry',
             'pool_entry__stage',
@@ -45,6 +46,7 @@ def recent_games(*, limit: int = 20) -> QuerySet[Game]:
 def games_for_matches_page() -> QuerySet[Game]:
     return (
         Game.objects
+        .filter(source_id__isnull=False)
         .select_related(
             'pool_entry',
             'pool_entry__stage',

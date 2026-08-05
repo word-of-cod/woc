@@ -32,6 +32,7 @@ from src.models import (
 class MatchesViewTests(TestCase):
     def setUp(self):
         player = Player.objects.create(name='Example Player')
+        opponent_player = Player.objects.create(name='Opponent Player')
         game_map = GameMap.objects.create(name='Hacienda')
         mode = GameMode.objects.create(name='Hardpoint')
         stage = CompetitionStage.objects.create(
@@ -49,6 +50,7 @@ class MatchesViewTests(TestCase):
             pool_entry=pool_entry,
             source=GameSource.LAN,
             opponent='OpTic Texas',
+            source_id='breakingpoint-game-1',
             event_date=timezone.make_aware(
                 datetime(2026, 1, 15, 19, 30)
             ),
@@ -59,6 +61,13 @@ class MatchesViewTests(TestCase):
             kills=24,
             deaths=16,
             team='Atlanta FaZe',
+        )
+        PlayerGameStat.objects.create(
+            player=opponent_player,
+            game=game,
+            kills=18,
+            deaths=20,
+            team='OpTic Texas',
         )
         BettingLine.objects.create(
             player=player,
@@ -76,8 +85,19 @@ class MatchesViewTests(TestCase):
         self.assertContains(response, 'Hardpoint')
         self.assertContains(response, 'OpTic Texas')
         self.assertContains(response, 'Atlanta FaZe')
+        self.assertContains(response, 'OpTic Texas')
         self.assertContains(response, 'Example Player')
+        self.assertContains(response, 'Opponent Player')
         self.assertContains(response, 'Map 1 kills')
         self.assertContains(response, '22.5')
         self.assertContains(response, '24')
         self.assertContains(response, 'OVER')
+
+    def test_matches_page_handles_imported_game_without_betting_lines(self):
+        BettingLine.objects.all().delete()
+
+        response = self.client.get(reverse('matches'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Player performance')
+        self.assertNotContains(response, '<th class="px-4 py-3 font-medium">Market</th>', html=True)

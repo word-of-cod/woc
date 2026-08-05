@@ -9,11 +9,11 @@
             <p class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-400">Competition archive</p>
             <h2 class="text-3xl font-bold tracking-tight text-white">Matches</h2>
             <p class="mt-2 max-w-2xl text-sm text-neutral-400">
-                Map-by-map results, player performance, and posted betting lines across LAN and online play.
+                Map-by-map player performance across LAN and online play, with betting lines where available.
             </p>
         </div>
         <div class="rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-neutral-300">
-            {{ games|length }} map{{ games|length|pluralize }} recorded
+            {{ total_games }} map{{ total_games|pluralize }} recorded
         </div>
     </div>
 
@@ -36,11 +36,7 @@
                             </span>
                         </div>
                         <p class="mt-2 text-sm text-neutral-400">
-                            <span class="font-medium text-neutral-200">
-                                {% if game.team_names %}{{ game.team_names|join:", " }}{% else %}Unknown team{% endif %}
-                            </span>
-                            <span class="mx-2 text-neutral-600">vs.</span>
-                            <span class="font-medium text-neutral-200">{{ game.opponent }}</span>
+                            <span class="font-medium text-neutral-200">{{ game.matchup_label }}</span>
                         </p>
                     </div>
                 </div>
@@ -61,12 +57,14 @@
 
             <details class="group">
                 <summary class="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800/50 hover:text-white">
-                    <span>View player stats and betting lines</span>
+                    <span>View player stats{% if game.has_betting_lines %} and betting lines{% endif %}</span>
                     <span class="text-lg text-neutral-500 transition group-open:rotate-45">+</span>
                 </summary>
 
                 <div class="border-t border-neutral-800 bg-neutral-950/40 p-5">
-                    <h4 class="mb-3 text-sm font-semibold text-white">Player performance and betting lines</h4>
+                    <h4 class="mb-3 text-sm font-semibold text-white">
+                        Player performance{% if game.has_betting_lines %} and betting lines{% endif %}
+                    </h4>
                     <div class="overflow-x-auto rounded-xl border border-neutral-800">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-neutral-900 text-xs uppercase tracking-wider text-neutral-500">
@@ -75,50 +73,59 @@
                                     <th class="px-4 py-3 text-right font-medium">Kills</th>
                                     <th class="px-4 py-3 text-right font-medium">Deaths</th>
                                     <th class="px-4 py-3 text-right font-medium">K/D</th>
-                                    <th class="px-4 py-3 font-medium">Market</th>
-                                    <th class="px-4 py-3 text-right font-medium">Line</th>
-                                    <th class="px-4 py-3 text-right font-medium">Actual</th>
-                                    <th class="px-4 py-3 text-right font-medium">Result</th>
+                                    {% if game.has_betting_lines %}
+                                        <th class="px-4 py-3 font-medium">Market</th>
+                                        <th class="px-4 py-3 text-right font-medium">Line</th>
+                                        <th class="px-4 py-3 text-right font-medium">Actual</th>
+                                        <th class="px-4 py-3 text-right font-medium">Result</th>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-800">
-                                {% for row in game.player_rows %}
+                                {% for team_group in game.team_groups %}
+                                <tr class="bg-neutral-900/70">
+                                    <th colspan="{% if game.has_betting_lines %}8{% else %}4{% endif %}" scope="rowgroup" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-sky-300">
+                                        {{ team_group.name }}
+                                    </th>
+                                </tr>
+                                {% for row in team_group.rows %}
                                 <tr>
                                     <td class="px-4 py-3 font-medium text-neutral-200">{{ row.player.name }}</td>
                                     <td class="px-4 py-3 text-right text-emerald-300">
-                                        {% if row.stat %}{{ row.stat.kills }}{% else %}â€”{% endif %}
+                                        {% if row.stat %}{{ row.stat.kills }}{% else %}&mdash;{% endif %}
                                     </td>
                                     <td class="px-4 py-3 text-right text-rose-300">
-                                        {% if row.stat %}{{ row.stat.deaths }}{% else %}â€”{% endif %}
+                                        {% if row.stat %}{{ row.stat.deaths }}{% else %}&mdash;{% endif %}
                                     </td>
                                     <td class="px-4 py-3 text-right text-neutral-300">
                                         {% if row.stat and row.stat.kill_death_ratio is not None %}
                                             {{ row.stat.kill_death_ratio|floatformat:2 }}
                                         {% else %}
-                                            â€”
+                                            &mdash;
                                         {% endif %}
                                     </td>
+                                    {% if game.has_betting_lines %}
                                     <td class="px-4 py-3 text-neutral-400">
                                         {% for item in row.lines %}
                                             <div{% if not forloop.last %} class="mb-1"{% endif %}>{{ item.line.get_market_display }}</div>
                                         {% empty %}
-                                            â€”
+                                            &mdash;
                                         {% endfor %}
                                     </td>
                                     <td class="px-4 py-3 text-right font-semibold text-amber-300">
                                         {% for item in row.lines %}
                                             <div{% if not forloop.last %} class="mb-1"{% endif %}>{{ item.line.line|floatformat:1 }}</div>
                                         {% empty %}
-                                            â€”
+                                            &mdash;
                                         {% endfor %}
                                     </td>
                                     <td class="px-4 py-3 text-right font-semibold text-neutral-200">
                                         {% for item in row.lines %}
                                             <div{% if not forloop.last %} class="mb-1"{% endif %}>
-                                                {% if item.actual_value is not None %}{{ item.actual_value }}{% else %}â€”{% endif %}
+                                                {% if item.actual_value is not None %}{{ item.actual_value }}{% else %}&mdash;{% endif %}
                                             </div>
                                         {% empty %}
-                                            â€”
+                                            &mdash;
                                         {% endfor %}
                                     </td>
                                     <td class="px-4 py-3 text-right font-semibold">
@@ -127,12 +134,14 @@
                                                 {{ item.outcome }}
                                             </div>
                                         {% empty %}
-                                            â€”
+                                            &mdash;
                                         {% endfor %}
                                     </td>
+                                    {% endif %}
                                 </tr>
+                                {% endfor %}
                                 {% empty %}
-                                <tr><td colspan="8" class="px-4 py-5 text-center text-neutral-500">No player data recorded.</td></tr>
+                                <tr><td colspan="{% if game.has_betting_lines %}8{% else %}4{% endif %}" class="px-4 py-5 text-center text-neutral-500">No player data recorded.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -147,6 +156,18 @@
         </div>
         {% endfor %}
     </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-8 flex items-center justify-center gap-3" aria-label="Matches pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2 text-sm text-neutral-300 hover:border-neutral-600 hover:text-white">Previous</a>
+        {% endif %}
+        <span class="text-sm text-neutral-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2 text-sm text-neutral-300 hover:border-neutral-600 hover:text-white">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
 </section>
 {% endblock %}
 
