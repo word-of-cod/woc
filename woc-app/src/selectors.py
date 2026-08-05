@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import Prefetch, QuerySet
 
 from .models import (
     BettingLine,
@@ -39,6 +39,36 @@ def recent_games(*, limit: int = 20) -> QuerySet[Game]:
             'betting_lines__player',
         )
         .order_by('-event_date', '-game_id')[:limit]
+    )
+
+
+def games_for_matches_page() -> QuerySet[Game]:
+    return (
+        Game.objects
+        .select_related(
+            'pool_entry',
+            'pool_entry__stage',
+            'pool_entry__game_map',
+            'pool_entry__mode',
+        )
+        .prefetch_related(
+            Prefetch(
+                'player_stats',
+                queryset=PlayerGameStat.objects.select_related('player').order_by(
+                    '-kills',
+                    'deaths',
+                    'player__name',
+                ),
+            ),
+            Prefetch(
+                'betting_lines',
+                queryset=BettingLine.objects.select_related('player').order_by(
+                    'market',
+                    'player__name',
+                ),
+            ),
+        )
+        .order_by('-event_date', '-game_id')
     )
 
 def games_for_stage(
