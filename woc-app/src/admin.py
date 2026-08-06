@@ -47,6 +47,7 @@ class PlayerAliasAdmin(admin.ModelAdmin):
 class UnderdogMarketAdmin(admin.ModelAdmin):
     list_display = (
         'player_name',
+        'market_scope',
         'series_game_number',
         'stat_type',
         'line',
@@ -54,7 +55,10 @@ class UnderdogMarketAdmin(admin.ModelAdmin):
         'resolution_status',
         'scheduled_at',
     )
-    list_filter = ('status', 'resolution_status', 'stat_type', 'series_game_number')
+    list_filter = (
+        'status', 'resolution_status', 'market_scope', 'stat_type',
+        'series_game_number',
+    )
     search_fields = (
         'player_name', 'team_name', 'opponent_name', 'external_id'
     )

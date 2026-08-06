@@ -7,10 +7,14 @@ import re
 
 from django.utils.dateparse import parse_datetime
 
-from .models import BettingStatType, MarketStatus
+from .models import BettingStatType, MarketScope, MarketStatus
 
 
 SUPPORTED_STAT_PATTERN = re.compile(r'^(kills|deaths)_on_game_([1-3])$')
+GAMES_1_3_KILLS_STATS = {
+    'kills_on_games_1_2_3',
+    'kills_on_game_1_2_3',
+}
 
 
 @dataclass(frozen=True)
@@ -24,7 +28,8 @@ class ParsedUnderdogMarket:
     opponent_name: str
     title: str
     display_stat: str
-    series_game_number: int
+    market_scope: str
+    series_game_number: int | None
     stat_type: str
     line: Decimal
     status: str
@@ -87,10 +92,10 @@ def parse_payload(payload: dict) -> tuple[list[ParsedUnderdogMarket], dict[str, 
             counters['skipped_not_cod'] += 1
             continue
 
-        stat_match = SUPPORTED_STAT_PATTERN.match(
-            str(appearance_stat.get('stat') or '').lower()
-        )
-        if stat_match is None:
+        raw_stat = str(appearance_stat.get('stat') or '').lower()
+        stat_match = SUPPORTED_STAT_PATTERN.match(raw_stat)
+        is_games_1_3_kills = raw_stat in GAMES_1_3_KILLS_STATS
+        if stat_match is None and not is_games_1_3_kills:
             counters['skipped_unsupported'] += 1
             continue
 
@@ -134,7 +139,7 @@ def parse_payload(payload: dict) -> tuple[list[ParsedUnderdogMarket], dict[str, 
         status = raw_status if raw_status in valid_statuses else MarketStatus.UNKNOWN
         stat_type = (
             BettingStatType.KILLS
-            if stat_match.group(1) == 'kills'
+            if is_games_1_3_kills or stat_match.group(1) == 'kills'
             else BettingStatType.DEATHS
         )
 
@@ -148,7 +153,14 @@ def parse_payload(payload: dict) -> tuple[list[ParsedUnderdogMarket], dict[str, 
             opponent_name=opponent_name,
             title=title,
             display_stat=str(appearance_stat.get('display_stat') or ''),
-            series_game_number=int(stat_match.group(2)),
+            market_scope=(
+                MarketScope.GAMES_1_3
+                if is_games_1_3_kills
+                else MarketScope.SINGLE_GAME
+            ),
+            series_game_number=(
+                None if is_games_1_3_kills else int(stat_match.group(2))
+            ),
             stat_type=stat_type,
             line=line,
             status=status,

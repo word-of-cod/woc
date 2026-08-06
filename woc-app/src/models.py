@@ -25,6 +25,11 @@ class BettingStatType(models.TextChoices):
     DEATHS = 'DEATHS', 'Deaths'
 
 
+class MarketScope(models.TextChoices):
+    SINGLE_GAME = 'SINGLE_GAME', 'Single game'
+    GAMES_1_3 = 'GAMES_1_3', 'Games 1-3'
+
+
 class MarketStatus(models.TextChoices):
     ACTIVE = 'ACTIVE', 'Active'
     SUSPENDED = 'SUSPENDED', 'Suspended'
@@ -306,7 +311,12 @@ class UnderdogMarket(models.Model):
     opponent_name = models.CharField(max_length=150, blank=True)
     title = models.CharField(max_length=255)
     display_stat = models.CharField(max_length=100)
-    series_game_number = models.PositiveSmallIntegerField()
+    market_scope = models.CharField(
+        max_length=20,
+        choices=MarketScope.choices,
+        default=MarketScope.SINGLE_GAME,
+    )
+    series_game_number = models.PositiveSmallIntegerField(null=True, blank=True)
     stat_type = models.CharField(max_length=20, choices=BettingStatType.choices)
     line = models.DecimalField(max_digits=8, decimal_places=3)
     status = models.CharField(
@@ -335,13 +345,18 @@ class UnderdogMarket(models.Model):
                 name='underdog_markets_line_nonnegative',
             ),
             models.CheckConstraint(
-                condition=models.Q(series_game_number__gte=1),
+                condition=(
+                    models.Q(series_game_number__isnull=True)
+                    | models.Q(series_game_number__gte=1)
+                ),
                 name='underdog_markets_game_number_positive',
             ),
         ]
 
     @property
     def market_display(self):
+        if self.market_scope == MarketScope.GAMES_1_3:
+            return f'Games 1-3 {self.get_stat_type_display()}'
         return f'Game {self.series_game_number} {self.get_stat_type_display()}'
 
     def __str__(self):

@@ -107,7 +107,7 @@ class UnderdogParserTests(SimpleTestCase):
         self.assertEqual(market.series_game_number, 1)
         self.assertEqual(market.line, Decimal('24.5'))
 
-    def test_skips_aggregate_market(self):
+    def test_parses_games_one_through_three_kills_market(self):
         payload = underdog_payload(
             stat='kills_on_games_1_2_3',
             title='CoD: Simp Kills on Game 1+2+3 O/U',
@@ -115,8 +115,11 @@ class UnderdogParserTests(SimpleTestCase):
 
         markets, counters = parse_payload(payload)
 
-        self.assertEqual(markets, [])
-        self.assertEqual(counters['skipped_unsupported'], 1)
+        self.assertEqual(counters['supported'], 1)
+        self.assertEqual(len(markets), 1)
+        self.assertEqual(markets[0].market_scope, 'GAMES_1_3')
+        self.assertIsNone(markets[0].series_game_number)
+        self.assertEqual(markets[0].stat_type, 'KILLS')
 
 
 class UnderdogResolutionTests(TestCase):

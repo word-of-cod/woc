@@ -38,7 +38,8 @@ class Command(BaseCommand):
         if options['dry_run']:
             for market in parsed_markets:
                 self.stdout.write(
-                    f'{market.player_name}: Game {market.series_game_number} '
+                    f'{market.player_name}: '
+                    f'{"Games 1-3" if market.series_game_number is None else f"Game {market.series_game_number}"} '
                     f'{market.stat_type} {market.line} '
                     f'({market.team_name} vs. {market.opponent_name})'
                 )
@@ -62,6 +63,7 @@ class Command(BaseCommand):
                         'opponent_name': parsed.opponent_name,
                         'title': parsed.title,
                         'display_stat': parsed.display_stat,
+                        'market_scope': parsed.market_scope,
                         'series_game_number': parsed.series_game_number,
                         'stat_type': parsed.stat_type,
                         'line': parsed.line,

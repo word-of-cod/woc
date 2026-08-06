@@ -9,6 +9,7 @@ from django.db import transaction
 from .models import (
     BettingProvider,
     Game,
+    MarketScope,
     Player,
     PlayerAlias,
     ResolutionStatus,
@@ -114,6 +115,17 @@ def resolve_market(market: UnderdogMarket) -> UnderdogMarket:
         return market
 
     market.player = player
+    if market.market_scope == MarketScope.GAMES_1_3:
+        market.game = None
+        market.resolution_status = ResolutionStatus.PENDING
+        market.resolution_note = (
+            'Aggregate Games 1-3 market is not linked to one map-level game.'
+        )
+        market.save(update_fields=(
+            'player', 'game', 'resolution_status', 'resolution_note'
+        ))
+        return market
+
     if market.scheduled_at is None:
         market.game = None
         market.resolution_status = ResolutionStatus.UNMATCHED_GAME
