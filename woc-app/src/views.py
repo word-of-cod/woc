@@ -1,20 +1,29 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
 
-from .selectors import games_for_matches_page, recent_games
+from .selectors import games_for_matches_page, live_underdog_markets, recent_games
 
 
 def evaluate_betting_line(*, line, stat):
+    is_underdog = hasattr(line, 'stat_type')
     if stat is None:
         return {
             'line': line,
+            'market_display': (
+                line.market_display if is_underdog else line.get_market_display()
+            ),
+            'provider_display': 'Underdog' if is_underdog else '',
             'actual_value': None,
             'outcome': 'PENDING',
         }
 
-    if line.market.endswith('_KILLS'):
+    if is_underdog and line.stat_type == 'KILLS':
         actual_value = stat.kills
-    elif line.market.endswith('_DEATHS'):
+    elif is_underdog and line.stat_type == 'DEATHS':
+        actual_value = stat.deaths
+    elif not is_underdog and line.market.endswith('_KILLS'):
+        actual_value = stat.kills
+    elif not is_underdog and line.market.endswith('_DEATHS'):
         actual_value = stat.deaths
     else:
         actual_value = None
@@ -30,6 +39,10 @@ def evaluate_betting_line(*, line, stat):
 
     return {
         'line': line,
+        'market_display': (
+            line.market_display if is_underdog else line.get_market_display()
+        ),
+        'provider_display': 'Underdog' if is_underdog else '',
         'actual_value': actual_value,
         'outcome': outcome,
     }
@@ -51,11 +64,24 @@ def matches(request):
     paginator = Paginator(games_for_matches_page(), 25)
     page_obj = paginator.get_page(request.GET.get('page'))
     games = page_obj.object_list
+    live_market_groups = {}
+    for market in live_underdog_markets():
+        group = live_market_groups.setdefault(
+            market.external_match_id,
+            {
+                'scheduled_at': market.scheduled_at,
+                'team_name': market.team_name,
+                'opponent_name': market.opponent_name,
+                'markets': [],
+            },
+        )
+        group['markets'].append(market)
 
     for game in games:
         stats = list(game.player_stats.all())
         lines_by_player = {}
         betting_lines = list(game.betting_lines.all())
+        betting_lines.extend(game.underdog_markets.all())
         for line in betting_lines:
             lines_by_player.setdefault(line.player_id, []).append(line)
 
@@ -109,5 +135,6 @@ def matches(request):
             'games': games,
             'page_obj': page_obj,
             'total_games': paginator.count,
+            'live_market_groups': list(live_market_groups.values()),
         },
     )

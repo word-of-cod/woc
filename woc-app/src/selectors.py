@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.db.models import Prefetch, QuerySet
+from django.utils import timezone
 
 from .models import (
     BettingLine,
@@ -6,7 +9,9 @@ from .models import (
     Game,
     Player,
     PlayerGameStat,
+    ResolutionStatus,
     StageMapPoolEntry,
+    UnderdogMarket,
 )
 
 def get_player(*, player_id: int) -> Player:
@@ -69,8 +74,29 @@ def games_for_matches_page() -> QuerySet[Game]:
                     'player__name',
                 ),
             ),
+            Prefetch(
+                'underdog_markets',
+                queryset=UnderdogMarket.objects.filter(
+                    resolution_status=ResolutionStatus.RESOLVED,
+                ).select_related('player').order_by(
+                    'player__name',
+                    'stat_type',
+                ),
+            ),
         )
         .order_by('-event_date', '-game_id')
+    )
+
+
+def live_underdog_markets() -> QuerySet[UnderdogMarket]:
+    return (
+        UnderdogMarket.objects
+        .filter(
+            status='ACTIVE',
+            scheduled_at__gte=timezone.now() - timedelta(hours=6),
+        )
+        .select_related('player', 'game')
+        .order_by('scheduled_at', 'external_match_id', 'player_name', 'series_game_number')
     )
 
 def games_for_stage(

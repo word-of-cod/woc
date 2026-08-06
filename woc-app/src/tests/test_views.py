@@ -16,6 +16,7 @@ from src.models import (
     Player,
     PlayerGameStat,
     StageMapPoolEntry,
+    UnderdogMarket,
 )
 
 
@@ -75,6 +76,24 @@ class MatchesViewTests(TestCase):
             market=BettingMarket.MAP_1_KILLS,
             line=Decimal('22.500'),
         )
+        UnderdogMarket.objects.create(
+            external_id='underdog-line-1',
+            external_player_id='underdog-player-1',
+            external_match_id='underdog-match-1',
+            player=player,
+            game=game,
+            player_name='Example Player',
+            team_name='Atlanta FaZe',
+            opponent_name='OpTic Texas',
+            title='CoD: Example Player Kills on Game 1 O/U',
+            display_stat='Kills on Game 1',
+            series_game_number=1,
+            stat_type='KILLS',
+            line=Decimal('23.500'),
+            status='ACTIVE',
+            resolution_status='RESOLVED',
+            scheduled_at=timezone.make_aware(datetime(2026, 1, 15, 19, 30)),
+        )
 
     def test_matches_page_displays_game_stats_and_line(self):
         response = self.client.get(reverse('matches'))
@@ -92,9 +111,12 @@ class MatchesViewTests(TestCase):
         self.assertContains(response, '22.5')
         self.assertContains(response, '24')
         self.assertContains(response, 'OVER')
+        self.assertContains(response, 'Underdog')
+        self.assertContains(response, 'Game 1 Kills')
 
     def test_matches_page_handles_imported_game_without_betting_lines(self):
         BettingLine.objects.all().delete()
+        UnderdogMarket.objects.all().delete()
 
         response = self.client.get(reverse('matches'))
 

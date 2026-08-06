@@ -35,6 +35,8 @@ services:
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       LOAD_TEST_DATA: ${LOAD_TEST_DATA:-true}
+      UNDERDOG_BASE_URL: ${UNDERDOG_BASE_URL:-https://api.underdogfantasy.com}
+      UNDERDOG_STATE_CONFIG_ID: ${UNDERDOG_STATE_CONFIG_ID:-8176bf5b-d026-4be0-b6b8-02f1f101a8c6}
     ports:
       - "8000:8000"
     depends_on:

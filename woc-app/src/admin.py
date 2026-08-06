@@ -7,8 +7,10 @@ from .models import (
     GameMap,
     GameMode,
     Player,
+    PlayerAlias,
     PlayerGameStat,
     StageMapPoolEntry,
+    UnderdogMarket,
 )
 
 
@@ -31,6 +33,36 @@ class PlayerGameStatInline(admin.TabularInline):
 class BettingLineInline(admin.TabularInline):
     model = BettingLine
     extra = 0
+
+
+@admin.register(PlayerAlias)
+class PlayerAliasAdmin(admin.ModelAdmin):
+    list_display = ('provider', 'display_name', 'external_player_id', 'player')
+    list_filter = ('provider',)
+    search_fields = ('display_name', 'external_player_id', 'player__name')
+    list_select_related = ('player',)
+
+
+@admin.register(UnderdogMarket)
+class UnderdogMarketAdmin(admin.ModelAdmin):
+    list_display = (
+        'player_name',
+        'market_scope',
+        'series_game_number',
+        'stat_type',
+        'line',
+        'status',
+        'resolution_status',
+        'scheduled_at',
+    )
+    list_filter = (
+        'status', 'resolution_status', 'market_scope', 'stat_type',
+        'series_game_number',
+    )
+    search_fields = (
+        'player_name', 'team_name', 'opponent_name', 'external_id'
+    )
+    raw_id_fields = ('player', 'game')
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
