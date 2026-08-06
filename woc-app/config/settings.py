@@ -43,6 +43,15 @@ BREAKINGPOINT_BASE_URL = os.environ.get(
 BREAKINGPOINT_API_KEY = os.environ.get('BREAKINGPOINT_API_KEY')
 BREAKINGPOINT_ACCESS_TOKEN = os.environ.get('BREAKINGPOINT_ACCESS_TOKEN')
 
+UNDERDOG_BASE_URL = os.environ.get(
+    'UNDERDOG_BASE_URL',
+    'https://api.underdogfantasy.com',
+)
+UNDERDOG_STATE_CONFIG_ID = os.environ.get(
+    'UNDERDOG_STATE_CONFIG_ID',
+    '8176bf5b-d026-4be0-b6b8-02f1f101a8c6',
+)
+
 
 # Application definition
 

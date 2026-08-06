@@ -4,6 +4,50 @@
 
 {% block content %}
 <section class="mx-auto max-w-7xl">
+    {% if live_market_groups %}
+    <div class="mb-10">
+        <div class="mb-5">
+            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-violet-400">Live markets</p>
+            <h2 class="text-2xl font-bold tracking-tight text-white">Underdog lines</h2>
+            <p class="mt-2 text-sm text-neutral-400">Current supported Call of Duty markets. Lines may remain unmatched until game results are imported.</p>
+        </div>
+        <div class="space-y-5">
+            {% for group in live_market_groups %}
+            <article class="overflow-hidden rounded-2xl border border-violet-400/20 bg-neutral-900 shadow-xl shadow-black/10">
+                <header class="flex flex-col gap-2 border-b border-neutral-800 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h3 class="font-semibold text-white">{{ group.team_name }} vs. {{ group.opponent_name }}</h3>
+                        <p class="mt-1 text-xs text-neutral-500">Underdog</p>
+                    </div>
+                    <time class="text-sm text-neutral-400" datetime="{{ group.scheduled_at|date:'c' }}">{{ group.scheduled_at|date:"M j, Y g:i A" }}</time>
+                </header>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-neutral-950/40 text-xs uppercase tracking-wider text-neutral-500">
+                            <tr>
+                                <th class="px-4 py-3 font-medium">Player</th>
+                                <th class="px-4 py-3 font-medium">Market</th>
+                                <th class="px-4 py-3 text-right font-medium">Line</th>
+                                <th class="px-4 py-3 font-medium">Resolution</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-neutral-800">
+                            {% for market in group.markets %}
+                            <tr>
+                                <td class="px-4 py-3 font-medium text-neutral-200">{{ market.player_name }}</td>
+                                <td class="px-4 py-3 text-neutral-300">{{ market.market_display }}</td>
+                                <td class="px-4 py-3 text-right font-semibold text-amber-300">{{ market.line|floatformat:1 }}</td>
+                                <td class="px-4 py-3 text-xs text-neutral-500">{{ market.get_resolution_status_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <p class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-400">Competition archive</p>
@@ -107,7 +151,9 @@
                                     {% if game.has_betting_lines %}
                                     <td class="px-4 py-3 text-neutral-400">
                                         {% for item in row.lines %}
-                                            <div{% if not forloop.last %} class="mb-1"{% endif %}>{{ item.line.get_market_display }}</div>
+                                            <div{% if not forloop.last %} class="mb-1"{% endif %}>
+                                                {% if item.provider_display %}<span class="text-violet-300">{{ item.provider_display }}</span> &middot; {% endif %}{{ item.market_display }}
+                                            </div>
                                         {% empty %}
                                             &mdash;
                                         {% endfor %}
