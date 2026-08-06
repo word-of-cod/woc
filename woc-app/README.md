@@ -5,6 +5,33 @@
 - Jack Rauch
 - Connor Searcy (just happy to be here)
 
+## `just` commands
+
+We use [`just`](https://github.com/casey/just) as a cross-platform task runner (works the same on Mac and Windows — no more separate `run.sh`/`run.bat`).
+
+Install it once:
+- Mac: `brew install just`
+- Windows: `winget install --id Casey.Just` (or `choco install just` / `scoop install just`)
+
+Recipes (run from the repo root):
+
+| Command | What it does |
+|---|---|
+| `just up` | Build (if needed) and start the full stack (db + app) in the background via docker compose. Bootstraps `.env` from `.env.template` on first run. |
+| `just down` | Stop and remove the stack's containers. |
+| `just rebuild` | Rebuild the app image from scratch (`--no-cache`) and restart. Use after dependency changes. |
+| `just logs` | Follow logs from the app container. |
+| `just runserver` | Run the Django dev server locally (outside docker), using the project's venv. |
+| `just migrate` | Apply database migrations locally. |
+| `just check` | Run Django's system checks. |
+| `just check-migrations` | Fail if models have changes not yet captured in a migration. |
+| `just test` | Run the test suite (`manage.py test src`). |
+| `just tailwind-install` | Install/update the Tailwind toolchain (node deps). |
+| `just tailwind-start` | Watch and rebuild Tailwind CSS on change (dev). |
+| `just tailwind-build` | Rebuild Tailwind CSS once (matches the Dockerfile build step). |
+
+Run `just --list` at any time to see this list from the CLI.
+
 ## Pulling Underdog Stats 
 Pre-Req: Ensure your .env shows the below:
 
@@ -42,8 +69,8 @@ FROM underdog_markets
 ORDER BY scheduled_at, player_name, series_game_number;
 ```
 12) Use `\q` to exit the postgres terminal
-13) Build the new frontend: `python woc-app\manage.py tailwind build`
-14) Run the server: `python woc-app\manage.py runserver`
+13) Build the new frontend: `python woc-app\manage.py tailwind build` (or `just tailwind-build`)
+14) Run the server: `python woc-app\manage.py runserver` (or `just runserver`)
 15) Navigate to: http://127.0.0.1:8000/matches/
 
 
@@ -76,6 +103,6 @@ FROM underdog_markets
 ORDER BY scheduled_at, player_name, series_game_number;
 ```
 12) Use `\q` to exit the postgres terminal
-13) Build the new frontend: `python woc-app/manage.py tailwind build`
-14) Run the server: `python woc-app/manage.py runserver`
+13) Build the new frontend: `python woc-app/manage.py tailwind build` (or `just tailwind-build`)
+14) Run the server: `python woc-app/manage.py runserver` (or `just runserver`)
 15) Navigate to: http://127.0.0.1:8000/matches/
