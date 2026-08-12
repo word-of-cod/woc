@@ -4,4 +4,5 @@ from src import views
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('matches/', views.matches, name='matches'),
+    path('players/', views.players, name='players'),
 ]

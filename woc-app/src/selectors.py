@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db.models import Prefetch, QuerySet
+from django.db.models import Count, Prefetch, Q, QuerySet, Sum
 from django.utils import timezone
 
 from .models import (
@@ -9,6 +9,7 @@ from .models import (
     Game,
     Player,
     PlayerGameStat,
+    ProfessionalRoster,
     ResolutionStatus,
     StageMapPoolEntry,
     UnderdogMarket,
@@ -97,6 +98,61 @@ def live_underdog_markets() -> QuerySet[UnderdogMarket]:
         )
         .select_related('player', 'game')
         .order_by('scheduled_at', 'external_match_id', 'player_name', 'series_game_number')
+    )
+
+
+def roster_for_season(*, season: int) -> QuerySet[ProfessionalRoster]:
+    return (
+        ProfessionalRoster.objects
+        .filter(season=season)
+        .select_related('player')
+        .annotate(
+            games_played=Count(
+                'player__game_stats__game',
+                filter=Q(
+                    player__game_stats__game__pool_entry__stage__season=season
+                ),
+                distinct=True,
+            ),
+            total_kills=Sum(
+                'player__game_stats__kills',
+                filter=Q(
+                    player__game_stats__game__pool_entry__stage__season=season
+                ),
+            ),
+            total_deaths=Sum(
+                'player__game_stats__deaths',
+                filter=Q(
+                    player__game_stats__game__pool_entry__stage__season=season
+                ),
+            ),
+        )
+        .order_by('team_name', 'display_order', 'player__name')
+    )
+
+
+def map_mode_splits_for_season(*, season: int, player_ids: list[int]):
+    return (
+        PlayerGameStat.objects
+        .filter(
+            player_id__in=player_ids,
+            game__pool_entry__stage__season=season,
+        )
+        .values(
+            'player_id',
+            'game__pool_entry__game_map__name',
+            'game__pool_entry__mode__name',
+        )
+        .annotate(
+            maps_played=Count('game_id'),
+            total_kills=Sum('kills'),
+            total_deaths=Sum('deaths'),
+        )
+        .order_by(
+            'player_id',
+            'game__pool_entry__mode__name',
+            'game__pool_entry__game_map__name',
+        )
     )
 
 def games_for_stage(
