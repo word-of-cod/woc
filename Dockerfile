@@ -6,8 +6,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY requirements.txt .
+# pip is build-only. Removing it also removes its stale vendored SBOM,
+# which otherwise reports vulnerabilities not present in the app packages.
 RUN python -m pip install --no-cache-dir -r requirements.txt \
-    && python -m pip check
+    && python -m pip check \
+    && rm -rf /usr/local/lib/python3.13/site-packages/pip \
+        /usr/local/lib/python3.13/site-packages/pip-*.dist-info \
+    && rm -f /usr/local/bin/pip /usr/local/bin/pip3 /usr/local/bin/pip3.13
 
 COPY woc-app/ .
 
