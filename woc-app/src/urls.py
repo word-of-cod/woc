@@ -9,4 +9,5 @@ urlpatterns = [
         views.refresh_betting_lines,
         name='refresh_betting_lines',
     ),
+    path('players/', views.players, name='players'),
 ]

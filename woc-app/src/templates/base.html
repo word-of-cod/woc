@@ -35,7 +35,10 @@
                    class="{% if request.resolver_match.url_name == 'matches' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
                     Matches
                 </a>
-                <a href="/players/" class="text-neutral-400 hover:text-white transition">Players</a>
+                <a href="{% url 'players' %}"
+                   class="{% if request.resolver_match.url_name == 'players' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
+                    Players
+                </a>
                 <a href="/teams/" class="text-neutral-400 hover:text-white transition">Teams</a>
             </nav>
         </div>

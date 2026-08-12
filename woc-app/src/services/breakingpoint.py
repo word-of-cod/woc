@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.dateparse import parse_date, parse_datetime
 
@@ -23,6 +24,7 @@ from ..models import (
     PlayerGameStat,
     StageMapPoolEntry,
 )
+from ..pro_teams import PRO_TEAM_NAMES_BY_NORMALIZED_NAME, normalize_team_name
 
 EVENT_TYPE_TO_SOURCE = {
     'Offline': GameSource.LAN,
@@ -41,17 +43,32 @@ class BreakingPointSyncResult:
 
 
 @transaction.atomic
-def sync_breakingpoint_stats(*, season: int, player_tags: list[str]) -> BreakingPointSyncResult:
-    if not player_tags:
+def sync_breakingpoint_stats(
+    *,
+    season: int,
+    player_tags: list[str] | None = None,
+    pro_teams_only: bool = False,
+) -> BreakingPointSyncResult:
+    """Pull Breaking Point player stats and upsert them into the local schema.
+
+    Pass `player_tags` for an explicit player list, or `pro_teams_only=True` to
+    pull every player in the season and keep only rows whose team matches the
+    configured professional rosters (see `pro_teams.PRO_TEAM_NAMES`).
+    """
+    if not player_tags and not pro_teams_only:
         raise ValueError('At least one player tag is required.')
 
     client = BreakingPointClient()
-    stats = client.fetch_player_stats(season_id=season, player_tags=player_tags)
+    stats = client.fetch_player_stats(
+        season_id=season,
+        player_tags=None if pro_teams_only else player_tags,
+    )
 
     result = BreakingPointSyncResult(fetched_count=len(stats))
     if not stats:
+        scope = 'pro teams' if pro_teams_only else f'players={player_tags}'
         result.warnings.append(
-            f'No player_stats rows found for season={season}, players={player_tags}.'
+            f'No player_stats rows found for season={season}, {scope}.'
         )
         return result
 
@@ -79,6 +96,16 @@ def sync_breakingpoint_stats(*, season: int, player_tags: list[str]) -> Breaking
                 f'Skipping game {game_id}: missing event/match reference data.'
             )
             continue
+
+        if pro_teams_only:
+            rows = [
+                row for row in rows
+                if normalize_team_name(
+                    teams_by_id.get(row['team_id'], {}).get('name', '')
+                ) in PRO_TEAM_NAMES_BY_NORMALIZED_NAME
+            ]
+            if not rows:
+                continue
 
         stage, _ = CompetitionStage.objects.update_or_create(
             name=event['name'],
@@ -124,15 +151,25 @@ def sync_breakingpoint_stats(*, season: int, player_tags: list[str]) -> Breaking
 
         event_date = parse_datetime(first['datetime'])
 
-        game, created = Game.objects.update_or_create(
-            source_id=game_id,
-            defaults={
-                'pool_entry': pool_entry,
-                'source': source,
-                'opponent': opponent_name,
-                'event_date': event_date,
-            },
-        )
+        try:
+            game, created = Game.objects.update_or_create(
+                source_id=game_id,
+                defaults={
+                    'pool_entry': pool_entry,
+                    'source': source,
+                    'opponent': opponent_name,
+                    'event_date': event_date,
+                },
+            )
+        except ValidationError:
+            # Breaking Point sometimes reuses one event_id across multiple
+            # real occurrences of a tournament, so the event's recorded date
+            # window doesn't always cover every game filed under it.
+            result.warnings.append(
+                f"Skipping game {game_id}: {event_date} falls outside "
+                f"{event['name']}'s recorded {stage.start_date}–{stage.end_date} window."
+            )
+            continue
         result.games_created += int(created)
 
         for row in rows:

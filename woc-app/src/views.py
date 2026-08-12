@@ -5,12 +5,15 @@ from django.views.decorators.http import require_POST
 
 from .analytics import evaluate_betting_line, hit_rate_summary, matchup_label
 from .breakingpoint_client import BreakingPointError
+from .pro_teams import PRO_TEAM_NAMES, normalize_team_name
 from .selectors import (
     games_for_matches_page,
     known_player_tags,
     latest_season,
     live_underdog_markets,
+    map_mode_splits_for_season,
     recent_games,
+    roster_for_season,
     upcoming_match_schedule,
 )
 from .services.breakingpoint import sync_breakingpoint_stats
@@ -62,6 +65,62 @@ def refresh_betting_lines(request):
         )
 
     return redirect('dashboard')
+
+
+def players(request):
+    try:
+        season = int(request.GET.get('season', 2026))
+    except (TypeError, ValueError):
+        season = 2026
+
+    players_by_team = {
+        normalize_team_name(team_name): {
+            'name': team_name,
+            'placement': placement,
+            'players': [],
+        }
+        for placement, team_name in enumerate(PRO_TEAM_NAMES, start=1)
+    }
+    roster_entries = list(roster_for_season(season=season))
+    splits_by_player = {}
+    for split in map_mode_splits_for_season(
+        season=season,
+        player_ids=[entry.player_id for entry in roster_entries],
+    ):
+        split['kill_death_ratio'] = (
+            split['total_kills'] / split['total_deaths']
+            if split['total_deaths']
+            else None
+        )
+        splits_by_player.setdefault(split['player_id'], []).append(split)
+
+    for roster_entry in roster_entries:
+        team = players_by_team.get(normalize_team_name(roster_entry.team_name))
+        if team is None:
+            continue
+        player = roster_entry.player
+        player.kill_death_ratio = (
+            roster_entry.total_kills / roster_entry.total_deaths
+            if roster_entry.total_deaths
+            else None
+        )
+        player.games_played = roster_entry.games_played
+        player.total_kills = roster_entry.total_kills
+        player.total_deaths = roster_entry.total_deaths
+        player.map_mode_splits = splits_by_player.get(player.player_id, [])
+        team['players'].append(player)
+
+    return render(
+        request,
+        'players.html',
+        {
+            'season': season,
+            'team_groups': list(players_by_team.values()),
+            'total_players': sum(
+                len(team['players']) for team in players_by_team.values()
+            ),
+        },
+    )
 
 
 def matches(request):

@@ -81,6 +81,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          pull: true
           load: true
           tags: ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:${{ github.sha }}
           cache-from: type=gha

@@ -138,6 +138,16 @@ class PullBreakingPointStatsCommandTests(TestCase):
 
         self.assertEqual(Game.objects.count(), 0)
 
+    def test_skips_game_when_event_date_falls_outside_stage_window(self, mock_client_cls):
+        stats = [make_stat_row(datetime='2025-01-01T12:00:00+00:00')]
+        mock_client_cls.return_value = make_client_mock(stats)
+
+        call_command('pull_breakingpoint_stats', season=2026, players='Huke', verbosity=0)
+
+        self.assertEqual(Game.objects.count(), 0)
+        self.assertEqual(PlayerGameStat.objects.count(), 0)
+        self.assertEqual(CompetitionStage.objects.get().name, 'Major 1')
+
     def test_unrecognized_event_type_is_recorded_as_other(self, mock_client_cls):
         stats = [make_stat_row(event_type='')]
         mock_client_cls.return_value = make_client_mock(stats)
@@ -183,3 +193,33 @@ class PullBreakingPointStatsCommandTests(TestCase):
 
         self.assertEqual(Game.objects.count(), 0)
         self.assertEqual(Player.objects.count(), 0)
+
+    def test_pro_teams_mode_imports_only_configured_teams(self, mock_client_cls):
+        stats = [
+            make_stat_row(player_id=39, player_tag='Huke', team_id=1),
+            make_stat_row(
+                player_id=88,
+                player_tag='Amateur',
+                team_id=3,
+                game_id='game-uuid-2',
+            ),
+        ]
+        teams = {
+            1: {'id': 1, 'name': 'OpTic Texas'},
+            2: {'id': 2, 'name': 'Los Angeles Thieves'},
+            3: {'id': 3, 'name': 'Amateur Team'},
+        }
+        mock_client_cls.return_value = make_client_mock(stats, teams=teams)
+
+        call_command(
+            'pull_breakingpoint_stats',
+            season=2026,
+            pro_teams=True,
+            verbosity=0,
+        )
+
+        self.assertEqual(list(Player.objects.values_list('name', flat=True)), ['Huke'])
+        mock_client_cls.return_value.fetch_player_stats.assert_called_once_with(
+            season_id=2026,
+            player_tags=None,
+        )

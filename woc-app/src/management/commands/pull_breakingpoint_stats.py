@@ -6,28 +6,42 @@ from src.services.breakingpoint import sync_breakingpoint_stats
 
 class Command(BaseCommand):
     help = (
-        'Pull player_stats from Breaking Point (breakingpoint.gg) for the given '
-        'season and player tags, and upsert them into the local schema. Intended '
-        'to run manually (e.g. weekly) with a fresh access token in .env.'
+        'Pull player_stats from Breaking Point (breakingpoint.gg) for selected '
+        'player tags or all configured professional teams, then upsert them into '
+        'the local schema. Run with a fresh access token in .env.'
     )
 
     def add_arguments(self, parser):
         parser.add_argument('--season', type=int, required=True)
-        parser.add_argument(
+        selection = parser.add_mutually_exclusive_group(required=True)
+        selection.add_argument(
             '--players',
             type=str,
-            required=True,
             help='Comma-separated Breaking Point player tags, e.g. "Huke,Simp".',
+        )
+        selection.add_argument(
+            '--pro-teams',
+            action='store_true',
+            help=(
+                'Pull every player-stat row belonging to the configured '
+                'professional teams.'
+            ),
         )
 
     def handle(self, *args, **options):
         season = options['season']
-        player_tags = [p.strip() for p in options['players'].split(',') if p.strip()]
-        if not player_tags:
-            raise CommandError('--players must include at least one player tag.')
+        player_tags = None
+        if options.get('players') is not None:
+            player_tags = [p.strip() for p in options['players'].split(',') if p.strip()]
+            if not player_tags:
+                raise CommandError('--players must include at least one player tag.')
 
         try:
-            result = sync_breakingpoint_stats(season=season, player_tags=player_tags)
+            result = sync_breakingpoint_stats(
+                season=season,
+                player_tags=player_tags,
+                pro_teams_only=options['pro_teams'],
+            )
         except BreakingPointError as exc:
             raise CommandError(str(exc)) from exc
 

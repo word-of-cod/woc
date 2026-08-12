@@ -1,9 +1,9 @@
 """Read-only client for the Breaking Point (breakingpoint.gg) stats API.
 
 Breaking Point exposes its Postgres tables directly through PostgREST, so
-this client is just auth headers + pagination + simple `in.(...)` filters
-on top of plain HTTP GETs. There is no bulk/mirror export here on purpose:
-callers ask for specific players and a specific season.
+this client is auth headers, pagination, and filters on top of plain HTTP
+GETs. Callers may request specific player tags or paginate through an entire
+season; the management command filters bulk results before writing them.
 """
 from __future__ import annotations
 
@@ -64,17 +64,23 @@ class BreakingPointClient:
             start += PAGE_SIZE
         return rows
 
-    def fetch_player_stats(self, *, season_id: int, player_tags: list[str]) -> list[dict]:
-        tags = ','.join(f'"{tag}"' for tag in player_tags)
+    def fetch_player_stats(
+        self,
+        *,
+        season_id: int,
+        player_tags: list[str] | None = None,
+    ) -> list[dict]:
         params = {
             'season_id': f'eq.{season_id}',
-            'player_tag': f'in.({tags})',
             'select': ','.join([
                 'game_id', 'player_id', 'player_tag', 'team_id', 'match_id',
                 'event_id', 'mode_id', 'map_id', 'datetime', 'event_type',
                 'season_id', 'kills', 'deaths', 'damage', 'assists',
             ]),
         }
+        if player_tags:
+            tags = ','.join(f'"{tag}"' for tag in player_tags)
+            params['player_tag'] = f'in.({tags})'
         return self.fetch_all('player_stats', params)
 
     def fetch_modes(self) -> dict[int, dict]:

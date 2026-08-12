@@ -93,6 +93,17 @@ class BreakingPointClientQueryBuildingTests(TestCase):
         self.assertIn('kills', params['select'])
         self.assertIn('deaths', params['select'])
 
+    def test_fetch_player_stats_can_request_every_player_in_season(self):
+        session = MagicMock()
+        session.get.return_value = make_response(200, [])
+        client = make_client(session)
+
+        client.fetch_player_stats(season_id=2026)
+
+        params = session.get.call_args.kwargs['params']
+        self.assertEqual(params['season_id'], 'eq.2026')
+        self.assertNotIn('player_tag', params)
+
     def test_fetch_events_returns_empty_without_request_when_no_ids(self):
         session = MagicMock()
         client = make_client(session)
