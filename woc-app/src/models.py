@@ -284,6 +284,35 @@ class PlayerAlias(models.Model):
         return f'{self.get_provider_display()}: {self.display_name} -> {self.player}'
 
 
+class ProfessionalRoster(models.Model):
+    roster_id = models.BigAutoField(primary_key=True)
+    season = models.PositiveSmallIntegerField()
+    team_name = models.CharField(max_length=150)
+    player = models.ForeignKey(
+        Player,
+        on_delete=models.PROTECT,
+        related_name='professional_roster_entries',
+    )
+    display_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        db_table = 'professional_rosters'
+        ordering = ('season', 'team_name', 'display_order', 'player__name')
+        constraints = [
+            models.UniqueConstraint(
+                fields=('season', 'team_name', 'player'),
+                name='unique_professional_roster_entry',
+            ),
+            models.UniqueConstraint(
+                fields=('season', 'player'),
+                name='unique_professional_roster_player',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.season} {self.team_name}: {self.player}'
+
+
 class UnderdogMarket(models.Model):
     underdog_market_id = models.BigAutoField(primary_key=True)
     external_id = models.CharField(max_length=100, unique=True)

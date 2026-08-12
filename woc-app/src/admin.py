@@ -9,6 +9,7 @@ from .models import (
     Player,
     PlayerAlias,
     PlayerGameStat,
+    ProfessionalRoster,
     StageMapPoolEntry,
     UnderdogMarket,
 )
@@ -40,6 +41,14 @@ class PlayerAliasAdmin(admin.ModelAdmin):
     list_display = ('provider', 'display_name', 'external_player_id', 'player')
     list_filter = ('provider',)
     search_fields = ('display_name', 'external_player_id', 'player__name')
+    list_select_related = ('player',)
+
+
+@admin.register(ProfessionalRoster)
+class ProfessionalRosterAdmin(admin.ModelAdmin):
+    list_display = ('season', 'team_name', 'display_order', 'player')
+    list_filter = ('season', 'team_name')
+    search_fields = ('team_name', 'player__name')
     list_select_related = ('player',)
 
 

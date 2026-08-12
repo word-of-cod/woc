@@ -15,6 +15,11 @@ from src.models import (
     PlayerGameStat,
     StageMapPoolEntry,
 )
+from src.pro_teams import (
+    PRO_TEAM_NAMES,
+    PRO_TEAM_NAMES_BY_NORMALIZED_NAME,
+    normalize_team_name,
+)
 
 EVENT_TYPE_TO_SOURCE = {
     'Offline': GameSource.LAN,
@@ -25,39 +30,70 @@ EVENT_TYPE_TO_SOURCE = {
 
 class Command(BaseCommand):
     help = (
-        'Pull player_stats from Breaking Point (breakingpoint.gg) for the given '
-        'season and player tags, and upsert them into the local schema. Intended '
-        'to run manually (e.g. weekly) with a fresh access token in .env.'
+        'Pull player_stats from Breaking Point (breakingpoint.gg) for selected '
+        'player tags or all configured professional teams, then upsert them into '
+        'the local schema. Run with a fresh access token in .env.'
     )
 
     def add_arguments(self, parser):
         parser.add_argument('--season', type=int, required=True)
-        parser.add_argument(
+        selection = parser.add_mutually_exclusive_group(required=True)
+        selection.add_argument(
             '--players',
             type=str,
-            required=True,
             help='Comma-separated Breaking Point player tags, e.g. "Huke,Simp".',
+        )
+        selection.add_argument(
+            '--pro-teams',
+            action='store_true',
+            help=(
+                'Pull every 2026 player-stat row belonging to the configured '
+                'professional teams.'
+            ),
         )
 
     @transaction.atomic
     def handle(self, *args, **options):
         season = options['season']
-        player_tags = [p.strip() for p in options['players'].split(',') if p.strip()]
-        if not player_tags:
+        player_tags = [
+            p.strip()
+            for p in (options.get('players') or '').split(',')
+            if p.strip()
+        ]
+        if options.get('players') is not None and not player_tags:
             raise CommandError('--players must include at least one player tag.')
 
         client = BreakingPointClient()
 
         try:
-            stats = client.fetch_player_stats(season_id=season, player_tags=player_tags)
+            stats = client.fetch_player_stats(
+                season_id=season,
+                player_tags=None if options['pro_teams'] else player_tags,
+            )
         except BreakingPointError as exc:
             raise CommandError(str(exc)) from exc
 
         if not stats:
             self.stdout.write(self.style.WARNING(
-                f'No player_stats rows found for season={season}, players={player_tags}.'
+                f'No player_stats rows found for season={season}.'
             ))
             return
+
+        teams_by_id = {}
+        if options['pro_teams']:
+            teams_by_id = client.fetch_teams({row['team_id'] for row in stats})
+            stats = [
+                row
+                for row in stats
+                if normalize_team_name(
+                    teams_by_id.get(row['team_id'], {}).get('name', '')
+                ) in PRO_TEAM_NAMES_BY_NORMALIZED_NAME
+            ]
+            if not stats:
+                raise CommandError(
+                    'Breaking Point returned no rows matching the configured pro '
+                    f'teams: {", ".join(PRO_TEAM_NAMES)}.'
+                )
 
         modes_by_id = client.fetch_modes()
         maps_by_id = client.fetch_maps()
@@ -68,7 +104,8 @@ class Command(BaseCommand):
         for match in matches_by_id.values():
             team_ids.add(match['team_1_id'])
             team_ids.add(match['team_2_id'])
-        teams_by_id = client.fetch_teams(team_ids)
+        missing_team_ids = team_ids.difference(teams_by_id)
+        teams_by_id.update(client.fetch_teams(missing_team_ids))
 
         rows_by_game = defaultdict(list)
         for row in stats:
@@ -166,5 +203,6 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f'Synced {games_created} new games, {players_created} new players, '
-            f'and {stats_written} player-game stat rows for season {season}.'
+            f'and {stats_written} player-game stat rows for season {season}'
+            f'{" across the configured pro teams" if options["pro_teams"] else ""}.'
         ))
