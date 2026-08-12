@@ -6,7 +6,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# These are inherited/tooling packages reported by the container vulnerability
+# scan. Install fixed versions explicitly before the application dependencies so
+# the final runtime image cannot retain the vulnerable releases from a base or
+# cached layer.
+RUN python -m pip install --no-cache-dir --upgrade \
+        "setuptools>=78.1.1" \
+        "msgpack>=1.2.1" \
+    && python -m pip install --no-cache-dir -r requirements.txt \
+    && python -m pip check
 
 COPY woc-app/ .
 
