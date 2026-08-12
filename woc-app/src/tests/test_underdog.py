@@ -20,9 +20,9 @@ from src.models import (
     StageMapPoolEntry,
     UnderdogMarket,
 )
+from src.services.underdog import resolve_market
 from src.underdog_client import UnderdogClient, UnderdogError
 from src.underdog_parser import parse_payload
-from src.underdog_service import resolve_market
 
 
 def underdog_payload(*, stat='kills_on_game_1', title='CoD: Simp Kills on Game 1 O/U'):

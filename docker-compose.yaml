@@ -37,6 +37,9 @@ services:
       LOAD_TEST_DATA: ${LOAD_TEST_DATA:-true}
       UNDERDOG_BASE_URL: ${UNDERDOG_BASE_URL:-https://api.underdogfantasy.com}
       UNDERDOG_STATE_CONFIG_ID: ${UNDERDOG_STATE_CONFIG_ID:-8176bf5b-d026-4be0-b6b8-02f1f101a8c6}
+      BREAKINGPOINT_BASE_URL: ${BREAKINGPOINT_BASE_URL:-https://dfpiiufxcciujugzjvgx.supabase.co/rest/v1}
+      BREAKINGPOINT_API_KEY: ${BREAKINGPOINT_API_KEY}
+      BREAKINGPOINT_ACCESS_TOKEN: ${BREAKINGPOINT_ACCESS_TOKEN}
     ports:
       - "8000:8000"
     depends_on:

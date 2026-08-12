@@ -75,7 +75,7 @@
                             <span class="rounded-full border border-neutral-700 px-2.5 py-1 text-xs text-neutral-300">
                                 {{ game.mode.name }}
                             </span>
-                            <span class="rounded-full px-2.5 py-1 text-xs font-semibold {% if game.source == 'LAN' %}bg-sky-400/10 text-sky-300{% else %}bg-violet-400/10 text-violet-300{% endif %}">
+                            <span class="rounded-full px-2.5 py-1 text-xs font-semibold {% if game.source == 'LAN' %}bg-sky-400/10 text-sky-300{% elif game.source == 'ONLINE' %}bg-violet-400/10 text-violet-300{% else %}bg-neutral-400/10 text-neutral-300{% endif %}">
                                 {{ game.get_source_display }}
                             </span>
                         </div>

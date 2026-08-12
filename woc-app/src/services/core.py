@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.db import transaction
 
-from .models import (
+from ..models import (
     BettingLine,
     BettingMarket,
     CompetitionStage,

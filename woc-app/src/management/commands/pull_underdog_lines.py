@@ -2,9 +2,9 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from src.models import UnderdogMarket
+from src.services.underdog import resolve_market
 from src.underdog_client import UnderdogClient, UnderdogError
 from src.underdog_parser import parse_payload
-from src.underdog_service import resolve_market
 
 
 class Command(BaseCommand):

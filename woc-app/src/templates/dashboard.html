@@ -1,34 +1,106 @@
 {% extends "base.html" %}
 
+{% block title %}Dashboard | Word of COD{% endblock %}
+
 {% block content %}
-{% for game in games %}
-    <article>
-        <h2>
-            {{ game.game_map.name }}
-            — {{ game.mode.name }}
-        </h2>
+<section class="mx-auto max-w-7xl space-y-10">
 
-        <p>Opponent: {{ game.opponent }}</p>
-        <p>Stage: {{ game.stage.name }}</p>
-        <p>Season: {{ game.stage.season }}</p>
-        <p>Source: {{ game.get_source_display }}</p>
-        <p>Date: {{ game.event_date }}</p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-400">Overview</p>
+            <h2 class="text-3xl font-bold tracking-tight text-white">Dashboard</h2>
+            <p class="mt-2 max-w-2xl text-sm text-neutral-400">
+                Upcoming matches, suggestion hit rate, and the latest results.
+            </p>
+        </div>
 
-        <h3>Player statistics</h3>
+        <form method="post" action="{% url 'refresh_betting_lines' %}">
+            {% csrf_token %}
+            <button type="submit" class="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-5 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/20">
+                Update betting lines
+            </button>
+        </form>
+    </div>
 
-        <ul>
-            {% for stat in game.player_stats.all %}
-                <li>
-                    {{ stat.player.name }}:
-                    {{ stat.kills }} kills,
-                    {{ stat.deaths }} deaths
-                </li>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Upcoming matches -->
+        <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
+            <div class="border-b border-neutral-800 px-5 py-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-violet-400">Schedule</p>
+                <h3 class="mt-1 text-lg font-semibold text-white">Upcoming matches</h3>
+            </div>
+            <div class="divide-y divide-neutral-800">
+                {% for match in upcoming_matches %}
+                <div class="flex items-center justify-between px-5 py-4">
+                    <p class="font-medium text-neutral-200">{{ match.team_name }} vs. {{ match.opponent_name }}</p>
+                    <time class="text-sm text-neutral-400" datetime="{{ match.scheduled_at|date:'c' }}">
+                        {{ match.scheduled_at|date:"M j, g:i A" }}
+                    </time>
+                </div>
+                {% empty %}
+                <p class="px-5 py-10 text-center text-sm text-neutral-500">No upcoming matches scheduled.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Hit rate tracker -->
+        <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
+            <div class="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-400">Suggestion vs. result</p>
+                    <h3 class="mt-1 text-lg font-semibold text-white">Hit rate tracker</h3>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold text-white">
+                        {% if hit_rate.rate is not None %}{{ hit_rate.rate|floatformat:0 }}%{% else %}&mdash;{% endif %}
+                    </p>
+                    <p class="text-xs text-neutral-500">{{ hit_rate.hits }}/{{ hit_rate.decided }} correct</p>
+                </div>
+            </div>
+            <div class="divide-y divide-neutral-800">
+                {% for entry in hit_rate.entries %}
+                <div class="flex items-center justify-between px-5 py-3 text-sm">
+                    <div>
+                        <p class="font-medium text-neutral-200">{{ entry.player_name }}</p>
+                        <p class="text-xs text-neutral-500">{{ entry.market_display }} &middot; line {{ entry.line|floatformat:1 }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-neutral-500">picked {{ entry.suggestion|default:"—" }}</p>
+                        <p class="font-semibold {% if entry.is_hit %}text-emerald-300{% elif entry.outcome == 'PUSH' %}text-amber-300{% else %}text-rose-300{% endif %}">
+                            {{ entry.outcome }}{% if entry.actual_value is not None %} ({{ entry.actual_value }}){% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="px-5 py-10 text-center text-sm text-neutral-500">No resolved lines yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent results -->
+    <div>
+        <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-white">Recent results</h3>
+            <a href="{% url 'matches' %}" class="text-sm text-neutral-400 hover:text-white">View all matches &rarr;</a>
+        </div>
+        <div class="space-y-3">
+            {% for game in games %}
+            <div class="flex flex-col gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="font-medium text-neutral-200">{{ game.game_map.name }} &middot; {{ game.mode.name }}</p>
+                    <p class="text-sm text-neutral-500">{{ game.matchup_label }} &middot; {{ game.stage.name }}</p>
+                </div>
+                <time class="text-sm text-neutral-400" datetime="{{ game.event_date|date:'c' }}">
+                    {{ game.event_date|date:"M j, Y" }}
+                </time>
+            </div>
             {% empty %}
-                <li>No statistics recorded.</li>
+            <div class="rounded-2xl border border-dashed border-neutral-800 px-6 py-12 text-center">
+                <p class="text-sm text-neutral-500">No games have been recorded.</p>
+            </div>
             {% endfor %}
-        </ul>
-    </article>
-{% empty %}
-    <p>No games have been recorded.</p>
-{% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}

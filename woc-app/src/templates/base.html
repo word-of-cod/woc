@@ -41,6 +41,22 @@
         </div>
     </header>
 
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div class="px-10 pt-8">
+        <div class="mx-auto max-w-7xl space-y-2">
+            {% for message in messages %}
+            <div class="rounded-xl border px-4 py-3 text-sm
+                {% if message.tags == 'error' %}border-rose-500/30 bg-rose-500/10 text-rose-200
+                {% elif message.tags == 'warning' %}border-amber-500/30 bg-amber-500/10 text-amber-200
+                {% else %}border-emerald-500/30 bg-emerald-500/10 text-emerald-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- PAGE CONTENT -->
     <main class="px-10 py-10">
         {% block content %}{% endblock %}

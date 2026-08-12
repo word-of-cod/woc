@@ -1,63 +1,67 @@
+from django.contrib import messages
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
-from .selectors import games_for_matches_page, live_underdog_markets, recent_games
-
-
-def evaluate_betting_line(*, line, stat):
-    is_underdog = hasattr(line, 'stat_type')
-    if stat is None:
-        return {
-            'line': line,
-            'market_display': (
-                line.market_display if is_underdog else line.get_market_display()
-            ),
-            'provider_display': 'Underdog' if is_underdog else '',
-            'actual_value': None,
-            'outcome': 'PENDING',
-        }
-
-    if is_underdog and line.stat_type == 'KILLS':
-        actual_value = stat.kills
-    elif is_underdog and line.stat_type == 'DEATHS':
-        actual_value = stat.deaths
-    elif not is_underdog and line.market.endswith('_KILLS'):
-        actual_value = stat.kills
-    elif not is_underdog and line.market.endswith('_DEATHS'):
-        actual_value = stat.deaths
-    else:
-        actual_value = None
-
-    if actual_value is None:
-        outcome = 'PENDING'
-    elif actual_value > line.line:
-        outcome = 'OVER'
-    elif actual_value < line.line:
-        outcome = 'UNDER'
-    else:
-        outcome = 'PUSH'
-
-    return {
-        'line': line,
-        'market_display': (
-            line.market_display if is_underdog else line.get_market_display()
-        ),
-        'provider_display': 'Underdog' if is_underdog else '',
-        'actual_value': actual_value,
-        'outcome': outcome,
-    }
+from .analytics import evaluate_betting_line, hit_rate_summary, matchup_label
+from .breakingpoint_client import BreakingPointError
+from .selectors import (
+    games_for_matches_page,
+    known_player_tags,
+    latest_season,
+    live_underdog_markets,
+    recent_games,
+    upcoming_match_schedule,
+)
+from .services.breakingpoint import sync_breakingpoint_stats
 
 
 def dashboard(request):
-    games = recent_games(limit=20)
+    games = recent_games(limit=8)
+    for game in games:
+        team_names = sorted({stat.team for stat in game.player_stats.all()})
+        game.matchup_label = matchup_label(team_names=team_names, opponent=game.opponent)
 
     return render(
         request,
         'dashboard.html',
         {
             'games': games,
+            'upcoming_matches': upcoming_match_schedule(limit=8),
+            'hit_rate': hit_rate_summary(limit=8),
         },
     )
+
+
+@require_POST
+def refresh_betting_lines(request):
+    season = latest_season()
+    player_tags = known_player_tags()
+
+    if season is None or not player_tags:
+        messages.error(
+            request,
+            'Add at least one competition stage and player before syncing '
+            'Breaking Point stats.',
+        )
+        return redirect('dashboard')
+
+    try:
+        result = sync_breakingpoint_stats(season=season, player_tags=player_tags)
+    except BreakingPointError as exc:
+        messages.error(request, f'Breaking Point sync failed: {exc}')
+        return redirect('dashboard')
+
+    if result.fetched_count == 0:
+        messages.warning(request, f'No Breaking Point stats found for season {season}.')
+    else:
+        messages.success(
+            request,
+            f'Synced {result.games_created} new games, {result.players_created} new '
+            f'players, and {result.stats_written} player-game stat rows.',
+        )
+
+    return redirect('dashboard')
 
 
 def matches(request):
@@ -87,12 +91,7 @@ def matches(request):
 
         game.team_names = sorted({stat.team for stat in stats})
         game.has_betting_lines = bool(betting_lines)
-        if len(game.team_names) > 1:
-            game.matchup_label = ' vs. '.join(game.team_names)
-        elif game.team_names:
-            game.matchup_label = f'{game.team_names[0]} vs. {game.opponent}'
-        else:
-            game.matchup_label = f'Unknown team vs. {game.opponent}'
+        game.matchup_label = matchup_label(team_names=game.team_names, opponent=game.opponent)
         rows_by_team = {}
 
         for stat in stats:

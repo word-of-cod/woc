@@ -14,6 +14,7 @@ from .models import (
     UnderdogMarket,
 )
 
+
 def get_player(*, player_id: int) -> Player:
     return Player.objects.get(player_id=player_id)
 
@@ -98,6 +99,38 @@ def live_underdog_markets() -> QuerySet[UnderdogMarket]:
         .select_related('player', 'game')
         .order_by('scheduled_at', 'external_match_id', 'player_name', 'series_game_number')
     )
+
+def upcoming_match_schedule(*, limit: int = 8) -> list[dict]:
+    rows = (
+        UnderdogMarket.objects
+        .filter(scheduled_at__gte=timezone.now())
+        .order_by('scheduled_at', 'external_match_id')
+        .values('external_match_id', 'team_name', 'opponent_name', 'scheduled_at')[:200]
+    )
+    matches = []
+    seen_match_ids = set()
+    for row in rows:
+        if row['external_match_id'] in seen_match_ids:
+            continue
+        seen_match_ids.add(row['external_match_id'])
+        matches.append(row)
+        if len(matches) >= limit:
+            break
+    return matches
+
+
+def latest_season() -> int | None:
+    return (
+        CompetitionStage.objects
+        .order_by('-season')
+        .values_list('season', flat=True)
+        .first()
+    )
+
+
+def known_player_tags() -> list[str]:
+    return list(Player.objects.order_by('name').values_list('name', flat=True))
+
 
 def games_for_stage(
     *,

@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from src.models import BettingMarket, GameSource
-from src.services import (
+from src.services.core import (
     add_map_to_stage_pool,
     create_competition_stage,
     create_game,
