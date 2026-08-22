@@ -45,6 +45,10 @@ runserver:
 migrate:
     {{python}} woc-app/manage.py migrate
 
+# run the edge-finding algorithm against current Underdog markets
+find-edges:
+    {{python}} woc-app/manage.py find_edges
+
 # install/update the tailwind toolchain (node deps)
 tailwind-install:
     {{python}} woc-app/manage.py tailwind install
