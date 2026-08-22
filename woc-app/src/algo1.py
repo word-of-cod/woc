@@ -46,11 +46,11 @@ def find_edges(
     min_games: int = 1,
     lookback_games: int | None = None,
 ) -> list[Edge]:
-    markets = load_markets()
+    markets = load_underdog_markets()
     edges: list[Edge] = []
 
     for market in markets:
-        history = load_player_history(market.player_id)
+        history = filterByMode(load_player_history(market.player_id), market.market_scope, market.series_game_number)
 
         #claude added this lookback_games param to limit the number of games to look back on. i have removed for now.
         #in general we are going to use the entire history. i might weigh more recent performances harder, but that is all.
@@ -222,17 +222,39 @@ def calculate_edge(
 #helper functions for loading markets and player history from the database. these functions use Django's ORM 
 #to query the database and return lists of UnderdogMarket and PlayerGameStat objects, respectively. they also 
 #use select_related to optimize the queries by fetching related player and game objects in a single query.
-def load_markets() -> list[UnderdogMarket]:
-    return list(UnderdogMarket.objects.filter(player__isnull=False).select_related("player", "game"))
+def load_underdog_markets() -> list[UnderdogMarket]:
+    return list(UnderdogMarket.objects
+                .filter(player__isnull=False)
+                .select_related("player", "game"))
     #uncomment the below for test data querying out of test_algo1.py
     #return test_algo1.testMarkets
         
 
 def load_player_history(player_id: int) -> list[PlayerGameStat]:
-    return list(PlayerGameStat.objects.filter(player_id=player_id).select_related("player", "game").order_by("-game__date"))
+    return list(PlayerGameStat.objects
+                .filter(player_id=player_id)
+                .select_related("player", "game")
+                .order_by("-game__event_date"))
     #uncomment the below for test data querying out of test_algo1.py
     #return test_algo1.testPlayerHistory.get(player_id, [])
 
+def filterByMode(player_history: list[PlayerGameStat], marketScope: str, gameNumber: int) -> list[PlayerGameStat]:
+    if marketScope == "SINGLE_GAME" and gameNumber == 1:
+        return [stat for stat in player_history if stat.game.number == 1]
+    elif marketScope == "SINGLE_GAME" and gameNumber == 2:
+        return [stat for stat in player_history if stat.game.number == 2]
+    elif marketScope == "SINGLE_GAME" and gameNumber == 3:
+        return [stat for stat in player_history if stat.game.number == 3]
+    elif marketScope == "GAMES_1_3":
+        return player_history
+    else:
+        return []
+
+def filterByMap(player_history: list[PlayerGameStat], mapName: str) -> list[PlayerGameStat]:
+    return [stat for stat in player_history if stat.game.map_name == mapName]
+
+def getMapName() -> str:
+    return "map1"  # Placeholder implementation; replace with actual logic to determine the map name later
 
 def main() -> None:
     edges = find_edges()
