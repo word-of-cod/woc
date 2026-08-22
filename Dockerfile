@@ -5,6 +5,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Pick up patched packages (e.g. util-linux CVE fixes) already published for
+# the base image's Debian release before installing anything else.
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 # pip is build-only. Removing it also removes its stale vendored SBOM,
 # which otherwise reports vulnerabilities not present in the app packages.
