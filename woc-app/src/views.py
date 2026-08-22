@@ -3,8 +3,10 @@ from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from .algorithm import find_edges, list_team_names
 from .analytics import evaluate_betting_line, hit_rate_summary, matchup_label
 from .breakingpoint_client import BreakingPointError
+from .models import GameMap
 from .pro_teams import PRO_TEAM_NAMES, normalize_team_name
 from .selectors import (
     games_for_matches_page,
@@ -18,12 +20,43 @@ from .selectors import (
 )
 from .services.breakingpoint import sync_breakingpoint_stats
 
+MAP_PICKER_SLOTS = range(1, 6)
+
 
 def dashboard(request):
     games = recent_games(limit=8)
     for game in games:
         team_names = sorted({stat.team for stat in game.player_stats.all()})
         game.matchup_label = matchup_label(team_names=team_names, opponent=game.opponent)
+
+    map_choices = list(GameMap.objects.values_list('name', flat=True))
+    map_slots = []
+    for game_number in MAP_PICKER_SLOTS:
+        map_slots.append({
+            'game_number': game_number,
+            'field_name': f'map_{game_number}',
+            'selected': request.GET.get(f'map_{game_number}', '').strip(),
+        })
+    selected_maps = {
+        slot['game_number']: slot['selected'] for slot in map_slots if slot['selected']
+    }
+
+    team_choices = list_team_names()
+    team_a = request.GET.get('team_a', '').strip()
+    team_b = request.GET.get('team_b', '').strip()
+    team_pair = (team_a, team_b) if team_a and team_b else None
+
+    edges = (
+        find_edges(selected_maps=selected_maps, team_names=team_pair)
+        if selected_maps or team_pair
+        else []
+    )
+    for edge in edges:
+        edge.matchup_label = matchup_label(
+            team_names=[edge.team_name] if edge.team_name else [],
+            opponent=edge.opponent_name,
+        )
+    edges.sort(key=lambda edge: (edge.matchup_label, edge.series_game_number or 0, edge.player_name))
 
     return render(
         request,
@@ -32,6 +65,12 @@ def dashboard(request):
             'games': games,
             'upcoming_matches': upcoming_match_schedule(limit=8),
             'hit_rate': hit_rate_summary(limit=8),
+            'map_choices': map_choices,
+            'map_slots': map_slots,
+            'team_choices': team_choices,
+            'team_a': team_a,
+            'team_b': team_b,
+            'edges': edges,
         },
     )
 
