@@ -240,11 +240,11 @@ def load_player_history(player_id: int) -> list[PlayerGameStat]:
 
 def filterByMode(player_history: list[PlayerGameStat], marketScope: str, gameNumber: int) -> list[PlayerGameStat]:
     if marketScope == "SINGLE_GAME" and gameNumber == 1:
-        return [stat for stat in player_history if stat.game.number == 1]
+        return [stat for stat in player_history if stat.game.mode.name.upper() == "HARDPOINT"]
     elif marketScope == "SINGLE_GAME" and gameNumber == 2:
-        return [stat for stat in player_history if stat.game.number == 2]
+        return [stat for stat in player_history if stat.game.mode.name.upper() in ("SEARCH & DESTROY", "SEARCH AND DESTROY")]
     elif marketScope == "SINGLE_GAME" and gameNumber == 3:
-        return [stat for stat in player_history if stat.game.number == 3]
+        return [stat for stat in player_history if stat.game.mode.name.upper() == "OVERLOAD"]
     elif marketScope == "GAMES_1_3":
         return player_history
     else:
