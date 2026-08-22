@@ -1,22 +1,7 @@
-# woc-app/src/algo1.py
-
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-import os
-import sys
 from typing import Iterable
-
-# Allow ``python algo1.py`` when the working directory is this ``src`` folder.
-if __package__ is None or __package__ == "":
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    sys.path.pop(1)
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-import django
-
-django.setup()
-
 from src.models import PlayerGameStat, UnderdogMarket
 from src.tests import test_algo1
 
@@ -275,7 +260,3 @@ def getMapName() -> str:
 def main() -> None:
     edges = find_edges()
     print_edges(edges)
-
-
-if __name__ == "__main__":
-    main()
