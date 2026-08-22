@@ -1,7 +1,7 @@
 # woc-app/src/algo1.py
 
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 import os
 import sys
@@ -96,11 +96,13 @@ def print_edges(edges: list[Edge]) -> None:
         return
 
     for edge in edges:
+        projection = edge.projection.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        difference = edge.difference.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         print(
             f"Market {edge.market_id}: {edge.player_name} | "
             f"{edge.stat_type} | line={edge.line} | "
-            f"projection={edge.projection} | "
-            f"difference={edge.difference} | "
+            f"projection={projection} | "
+            f"difference={difference} | "
             f"recommendation={edge.recommendation}"
         )
 
