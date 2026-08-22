@@ -29,7 +29,7 @@ Recipes (run from the repo root):
 | `just tailwind-install` | Install/update the Tailwind toolchain (node deps). |
 | `just tailwind-start` | Watch and rebuild Tailwind CSS on change (dev). |
 | `just tailwind-build` | Rebuild Tailwind CSS once (matches the Dockerfile build step). |
-| `just find-edge` | Run the algorithm with your local data. |
+| `just find-edges` | Run the algorithm with your local data. |
 
 Run `just --list` at any time to see this list from the CLI.
 
