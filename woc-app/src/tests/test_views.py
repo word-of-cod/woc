@@ -18,6 +18,7 @@ from src.models import (
     GameSource,
     Player,
     PlayerGameStat,
+    ProfessionalRoster,
     StageMapPoolEntry,
     UnderdogMarket,
 )
@@ -236,6 +237,93 @@ class DashboardViewTests(TestCase):
         self.assertContains(response, 'No upcoming matches scheduled.')
         self.assertContains(response, 'No resolved lines yet.')
         self.assertContains(response, 'No games have been recorded.')
+
+
+@override_settings(
+    STORAGES={
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+)
+class TeamsViewTests(TestCase):
+    def setUp(self):
+        game_map = GameMap.objects.create(name='Hacienda')
+        mode = GameMode.objects.create(name='Hardpoint')
+        stage = CompetitionStage.objects.create(
+            name='Major 1',
+            season=2026,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 2, 28),
+        )
+        pool_entry = StageMapPoolEntry.objects.create(
+            stage=stage,
+            game_map=game_map,
+            mode=mode,
+        )
+        game = Game.objects.create(
+            pool_entry=pool_entry,
+            source=GameSource.LAN,
+            opponent='Los Angeles Thieves',
+            source_id='breakingpoint-team-game-1',
+            event_date=timezone.make_aware(datetime(2026, 1, 15, 19, 30)),
+        )
+        optic_player = Player.objects.create(name='OpTic Player')
+        ProfessionalRoster.objects.create(
+            season=2026,
+            team_name='OpTic Texas',
+            player=optic_player,
+        )
+        PlayerGameStat.objects.create(
+            player=optic_player,
+            game=game,
+            kills=24,
+            deaths=16,
+            team='OpTic Texas',
+        )
+        PlayerGameStat.objects.create(
+            player=Player.objects.create(name='Former OpTic Player'),
+            game=game,
+            kills=18,
+            deaths=20,
+            team='OpTic Texas',
+        )
+
+    def test_teams_page_displays_derived_team_stats(self):
+        response = self.client.get(reverse('teams'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'teams.html')
+        self.assertContains(response, 'Historical team performance')
+        self.assertContains(response, 'OpTic Texas')
+        self.assertContains(response, 'FaZe Vegas')
+        self.assertNotContains(response, 'Former OpTic Player')
+        self.assertContains(response, '24')
+        self.assertContains(response, '1.50')
+        self.assertContains(
+            response,
+            'href="/players/#team-optic-texas"',
+            html=False,
+        )
+
+    def test_players_page_has_team_anchor_and_highlight_script(self):
+        response = self.client.get(reverse('players'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="team-optic-texas"', html=False)
+        self.assertContains(response, 'team-card-highlight')
+
+    def test_teams_page_handles_no_data(self):
+        PlayerGameStat.objects.all().delete()
+        Game.objects.all().delete()
+
+        response = self.client.get(reverse('teams'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No team statistics have been imported')
 
 
 @override_settings(

@@ -14,6 +14,7 @@ from .models import (
     StageMapPoolEntry,
     UnderdogMarket,
 )
+from .pro_teams import PRO_TEAM_NAMES, normalize_team_name
 
 
 def get_player(*, player_id: int) -> Player:
@@ -186,6 +187,84 @@ def map_mode_splits_for_season(*, season: int, player_ids: list[int]):
             'game__pool_entry__mode__name',
             'game__pool_entry__game_map__name',
         )
+    )
+
+
+def team_summaries_for_season(*, season: int):
+    """Return the eight current CDL teams using only current-roster stats.
+
+    `PlayerGameStat.team` is historical, so it can include former teams,
+    substitutes, Challengers, and EWC opponents.  The Teams page intentionally
+    uses the curated current roster as its boundary and only keeps a stat when
+    the player was recorded for that same current team.
+    """
+    roster_by_player = {
+        entry['player_id']: entry['team_name']
+        for entry in ProfessionalRoster.objects.filter(season=season).values(
+            'player_id', 'team_name'
+        )
+    }
+    summaries = {
+        team_name: {
+            'team': team_name,
+            'maps': set(),
+            'players': set(),
+            'events': set(),
+            'total_kills': 0,
+            'total_deaths': 0,
+            'last_played': None,
+        }
+        for team_name in PRO_TEAM_NAMES
+    }
+
+    stats = PlayerGameStat.objects.filter(
+        player_id__in=roster_by_player,
+        game__pool_entry__stage__season=season,
+    ).values(
+        'player_id',
+        'team',
+        'game_id',
+        'kills',
+        'deaths',
+        'game__event_date',
+        'game__pool_entry__stage_id',
+    )
+    for stat in stats:
+        team_name = roster_by_player[stat['player_id']]
+        if normalize_team_name(stat['team']) != normalize_team_name(team_name):
+            continue
+
+        summary = summaries[team_name]
+        summary['maps'].add(stat['game_id'])
+        summary['players'].add(stat['player_id'])
+        summary['events'].add(stat['game__pool_entry__stage_id'])
+        summary['total_kills'] += stat['kills']
+        summary['total_deaths'] += stat['deaths']
+        if (
+            summary['last_played'] is None
+            or stat['game__event_date'] > summary['last_played']
+        ):
+            summary['last_played'] = stat['game__event_date']
+
+    results = []
+    for summary in summaries.values():
+        summary['maps_played'] = len(summary.pop('maps'))
+        summary['players_recorded'] = len(summary.pop('players'))
+        summary['events_played'] = len(summary.pop('events'))
+        summary['kill_death_ratio'] = (
+            summary['total_kills'] / summary['total_deaths']
+            if summary['total_deaths']
+            else None
+        )
+        results.append(summary)
+
+    return sorted(
+        results,
+        key=lambda summary: (
+            -summary['maps_played'],
+            -summary['total_kills'],
+            summary['team'],
+        ),
     )
 
 def games_for_stage(

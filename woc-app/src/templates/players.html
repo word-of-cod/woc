@@ -19,7 +19,7 @@
 
     <div class="space-y-6">
         {% for team in team_groups %}
-        <article class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
+        <article id="team-{{ team.name|slugify }}" class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
             <header class="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
                 <div class="flex items-center gap-3">
                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-sky-400/10 text-xs font-bold text-sky-300">#{{ team.placement }}</span>
@@ -117,7 +117,27 @@
         {% endfor %}
     </div>
 </section>
+<style>
+    @keyframes team-card-flash {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        25%, 75% { box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.9), 0 0 26px rgba(56, 189, 248, 0.35); }
+    }
+    .team-card-highlight { animation: team-card-flash 1.4s ease-in-out 2; }
+</style>
 <script>
+    const selectedTeam = window.location.hash
+        ? document.querySelector(window.location.hash)
+        : null;
+    if (selectedTeam) {
+        selectedTeam.scrollIntoView({behavior: 'smooth', block: 'center'});
+        selectedTeam.classList.add('team-card-highlight');
+        selectedTeam.addEventListener(
+            'animationend',
+            () => selectedTeam.classList.remove('team-card-highlight'),
+            {once: true},
+        );
+    }
+
     document.querySelectorAll('[data-sort-column]').forEach((button) => {
         button.addEventListener('click', () => {
             const table = button.closest('table');

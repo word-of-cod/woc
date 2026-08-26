@@ -16,6 +16,7 @@ from .selectors import (
     map_mode_splits_for_season,
     recent_games,
     roster_for_season,
+    team_summaries_for_season,
     upcoming_match_schedule,
 )
 from .services.breakingpoint import sync_breakingpoint_stats
@@ -158,6 +159,27 @@ def players(request):
             'total_players': sum(
                 len(team['players']) for team in players_by_team.values()
             ),
+        },
+    )
+
+
+def teams(request):
+    try:
+        season = int(request.GET.get('season', latest_season() or 2026))
+    except (TypeError, ValueError):
+        season = latest_season() or 2026
+
+    teams = team_summaries_for_season(season=season)
+    for placement, team in enumerate(teams, start=1):
+        team['placement'] = placement
+
+    return render(
+        request,
+        'teams.html',
+        {
+            'season': season,
+            'teams': teams,
+            'has_team_stats': any(team['maps_played'] for team in teams),
         },
     )
 
