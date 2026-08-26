@@ -1,70 +1,109 @@
+from django.contrib import messages
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
+from .algorithm import find_edges, list_team_names
+from .analytics import evaluate_betting_line, hit_rate_summary, matchup_label
+from .breakingpoint_client import BreakingPointError
+from .models import GameMap
 from .pro_teams import PRO_TEAM_NAMES, normalize_team_name
 from .selectors import (
     games_for_matches_page,
+    known_player_tags,
+    latest_season,
     live_underdog_markets,
     map_mode_splits_for_season,
-    roster_for_season,
     recent_games,
+    roster_for_season,
+    upcoming_match_schedule,
 )
+from .services.breakingpoint import sync_breakingpoint_stats
 
-
-def evaluate_betting_line(*, line, stat):
-    is_underdog = hasattr(line, 'stat_type')
-    if stat is None:
-        return {
-            'line': line,
-            'market_display': (
-                line.market_display if is_underdog else line.get_market_display()
-            ),
-            'provider_display': 'Underdog' if is_underdog else '',
-            'actual_value': None,
-            'outcome': 'PENDING',
-        }
-
-    if is_underdog and line.stat_type == 'KILLS':
-        actual_value = stat.kills
-    elif is_underdog and line.stat_type == 'DEATHS':
-        actual_value = stat.deaths
-    elif not is_underdog and line.market.endswith('_KILLS'):
-        actual_value = stat.kills
-    elif not is_underdog and line.market.endswith('_DEATHS'):
-        actual_value = stat.deaths
-    else:
-        actual_value = None
-
-    if actual_value is None:
-        outcome = 'PENDING'
-    elif actual_value > line.line:
-        outcome = 'OVER'
-    elif actual_value < line.line:
-        outcome = 'UNDER'
-    else:
-        outcome = 'PUSH'
-
-    return {
-        'line': line,
-        'market_display': (
-            line.market_display if is_underdog else line.get_market_display()
-        ),
-        'provider_display': 'Underdog' if is_underdog else '',
-        'actual_value': actual_value,
-        'outcome': outcome,
-    }
+MAP_PICKER_SLOTS = range(1, 6)
 
 
 def dashboard(request):
-    games = recent_games(limit=20)
+    games = recent_games(limit=8)
+    for game in games:
+        team_names = sorted({stat.team for stat in game.player_stats.all()})
+        game.matchup_label = matchup_label(team_names=team_names, opponent=game.opponent)
+
+    map_choices = list(GameMap.objects.values_list('name', flat=True))
+    map_slots = []
+    for game_number in MAP_PICKER_SLOTS:
+        map_slots.append({
+            'game_number': game_number,
+            'field_name': f'map_{game_number}',
+            'selected': request.GET.get(f'map_{game_number}', '').strip(),
+        })
+    selected_maps = {
+        slot['game_number']: slot['selected'] for slot in map_slots if slot['selected']
+    }
+
+    team_choices = list_team_names()
+    team_a = request.GET.get('team_a', '').strip()
+    team_b = request.GET.get('team_b', '').strip()
+    team_pair = (team_a, team_b) if team_a and team_b else None
+
+    edges = (
+        find_edges(selected_maps=selected_maps, team_names=team_pair)
+        if selected_maps or team_pair
+        else []
+    )
+    for edge in edges:
+        edge.matchup_label = matchup_label(
+            team_names=[edge.team_name] if edge.team_name else [],
+            opponent=edge.opponent_name,
+        )
+    edges.sort(key=lambda edge: (edge.matchup_label, edge.series_game_number or 0, edge.player_name))
 
     return render(
         request,
         'dashboard.html',
         {
             'games': games,
+            'upcoming_matches': upcoming_match_schedule(limit=8),
+            'hit_rate': hit_rate_summary(limit=8),
+            'map_choices': map_choices,
+            'map_slots': map_slots,
+            'team_choices': team_choices,
+            'team_a': team_a,
+            'team_b': team_b,
+            'edges': edges,
         },
     )
+
+
+@require_POST
+def refresh_betting_lines(request):
+    season = latest_season()
+    player_tags = known_player_tags()
+
+    if season is None or not player_tags:
+        messages.error(
+            request,
+            'Add at least one competition stage and player before syncing '
+            'Breaking Point stats.',
+        )
+        return redirect('dashboard')
+
+    try:
+        result = sync_breakingpoint_stats(season=season, player_tags=player_tags)
+    except BreakingPointError as exc:
+        messages.error(request, f'Breaking Point sync failed: {exc}')
+        return redirect('dashboard')
+
+    if result.fetched_count == 0:
+        messages.warning(request, f'No Breaking Point stats found for season {season}.')
+    else:
+        messages.success(
+            request,
+            f'Synced {result.games_created} new games, {result.players_created} new '
+            f'players, and {result.stats_written} player-game stat rows.',
+        )
+
+    return redirect('dashboard')
 
 
 def players(request):
@@ -150,12 +189,7 @@ def matches(request):
 
         game.team_names = sorted({stat.team for stat in stats})
         game.has_betting_lines = bool(betting_lines)
-        if len(game.team_names) > 1:
-            game.matchup_label = ' vs. '.join(game.team_names)
-        elif game.team_names:
-            game.matchup_label = f'{game.team_names[0]} vs. {game.opponent}'
-        else:
-            game.matchup_label = f'Unknown team vs. {game.opponent}'
+        game.matchup_label = matchup_label(team_names=game.team_names, opponent=game.opponent)
         rows_by_team = {}
 
         for stat in stats:

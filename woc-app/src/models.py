@@ -5,6 +5,7 @@ from django.db import models
 class GameSource(models.TextChoices):
     LAN = 'LAN', 'LAN'
     ONLINE = 'ONLINE', 'Online'
+    OTHER = 'OTHER', 'Other'
 
 
 class BettingMarket(models.TextChoices):

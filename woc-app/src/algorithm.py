@@ -3,6 +3,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from typing import Iterable
 from src.models import PlayerGameStat, UnderdogMarket
+from src.pro_teams import normalize_team_name
 from src.tests import test_algo1
 
 #class from claude 
@@ -14,13 +15,17 @@ class HistorySummary:
 #class from claude
 @dataclass
 class Edge:
-    market_id: int 
+    market_id: int
     player_name: str
     stat_type: str
     line: Decimal
     projection: Decimal
     difference: Decimal
     recommendation: str
+    market_scope: str
+    series_game_number: int | None
+    team_name: str
+    opponent_name: str
 
 #main meat function... currently has a min_games? not sure if i need that now. might remove and then
 #add later when i add recency weighting. also lookback_games is a new param that claude added to limit the 
@@ -30,14 +35,39 @@ def find_edges(
     *,
     min_games: int = 1,
     lookback_games: int | None = None,
+    selected_maps: dict[int, str] | None = None,
+    team_names: tuple[str, str] | None = None,
 ) -> list[Edge]:
     markets = load_underdog_markets()
+    if team_names:
+        wanted_pair = {normalize_team_name(name) for name in team_names}
+        markets = [
+            market for market in markets
+            if {normalize_team_name(market.team_name), normalize_team_name(market.opponent_name)} == wanted_pair
+        ]
     player_ids = {market.player_id for market in markets}
     histories = load_player_histories(player_ids)
     edges: list[Edge] = []
 
     for market in markets:
-        history = filterByMode(histories.get(market.player_id, []), market.market_scope, market.series_game_number)
+        player_history = histories.get(market.player_id, [])
+        map_name = (selected_maps or {}).get(market.series_game_number)
+
+        #when the caller has picked an actual map for this game slot (e.g. from the
+        #dashboard's map picker), filter history by that map directly instead of
+        #falling back to the mode-based proxy below.
+        if map_name:
+            history = filterByMap(player_history, map_name)
+            #prefer this player's history against this specific opponent on this map
+            #(the actual upcoming matchup), but only if there's any such history --
+            #head-to-head samples are small in esports, so falling back to all-opponent
+            #history on the map beats having no projection at all.
+            if market.opponent_name:
+                matchup_history = filterByOpponent(history, market.opponent_name)
+                if matchup_history:
+                    history = matchup_history
+        else:
+            history = filterByMode(player_history, market.market_scope, market.series_game_number)
 
         #claude added this lookback_games param to limit the number of games to look back on. i have removed for now.
         #in general we are going to use the entire history. i might weigh more recent performances harder, but that is all.
@@ -72,6 +102,10 @@ def find_edges(
                 projection=projection,
                 difference=difference,
                 recommendation=recommendation,
+                market_scope=market.market_scope,
+                series_game_number=market.series_game_number,
+                team_name=market.team_name,
+                opponent_name=market.opponent_name,
             )
         )
 
@@ -224,12 +258,30 @@ def load_underdog_markets() -> list[UnderdogMarket]:
                 .select_related("player"))
     #uncomment the below for test data querying out of test_algo1.py
     #return test_algo1.testMarkets
-        
+
+
+#distinct team names appearing among current underdog markets, for populating the
+#dashboard's team 1 / team 2 dropdowns.
+def list_team_names() -> list[str]:
+    names = set()
+    for market in load_underdog_markets():
+        if market.team_name:
+            names.add(market.team_name)
+        if market.opponent_name:
+            names.add(market.opponent_name)
+    return sorted(names)
+
 
 def load_player_histories(player_ids: Iterable[int]) -> dict[int, list[PlayerGameStat]]:
     stats = (PlayerGameStat.objects
              .filter(player_id__in=player_ids)
-             .select_related("player", "game", "game__pool_entry", "game__pool_entry__mode")
+             .select_related(
+                 "player",
+                 "game",
+                 "game__pool_entry",
+                 "game__pool_entry__mode",
+                 "game__pool_entry__game_map",
+             )
              .order_by("-game__event_date"))
 
     histories: dict[int, list[PlayerGameStat]] = {}
@@ -253,6 +305,13 @@ def filterByMode(player_history: list[PlayerGameStat], marketScope: str, gameNum
 
 def filterByMap(player_history: list[PlayerGameStat], mapName: str) -> list[PlayerGameStat]:
     return [stat for stat in player_history if stat.game.game_map.name == mapName]
+
+def filterByOpponent(player_history: list[PlayerGameStat], opponentName: str) -> list[PlayerGameStat]:
+    normalized_opponent = normalize_team_name(opponentName)
+    return [
+        stat for stat in player_history
+        if normalize_team_name(stat.game.opponent) == normalized_opponent
+    ]
 
 def getMapName() -> str:
     return "map1"  # Placeholder implementation; replace with actual logic to determine the map name later

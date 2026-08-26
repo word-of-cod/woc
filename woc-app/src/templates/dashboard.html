@@ -1,34 +1,236 @@
 {% extends "base.html" %}
 
+{% block title %}Dashboard | Word of COD{% endblock %}
+
 {% block content %}
-{% for game in games %}
-    <article>
-        <h2>
-            {{ game.game_map.name }}
-            — {{ game.mode.name }}
-        </h2>
+<section class="mx-auto max-w-7xl space-y-10">
 
-        <p>Opponent: {{ game.opponent }}</p>
-        <p>Stage: {{ game.stage.name }}</p>
-        <p>Season: {{ game.stage.season }}</p>
-        <p>Source: {{ game.get_source_display }}</p>
-        <p>Date: {{ game.event_date }}</p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-400">Overview</p>
+            <h2 class="text-3xl font-bold tracking-tight text-white">Dashboard</h2>
+            <p class="mt-2 max-w-2xl text-sm text-neutral-400">
+                Upcoming matches, suggestion hit rate, and the latest results.
+            </p>
+        </div>
 
-        <h3>Player statistics</h3>
+        <form method="post" action="{% url 'refresh_betting_lines' %}">
+            {% csrf_token %}
+            <button type="submit" class="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-5 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/20">
+                Update betting lines
+            </button>
+        </form>
+    </div>
 
-        <ul>
-            {% for stat in game.player_stats.all %}
-                <li>
-                    {{ stat.player.name }}:
-                    {{ stat.kills }} kills,
-                    {{ stat.deaths }} deaths
-                </li>
-            {% empty %}
-                <li>No statistics recorded.</li>
+    <!-- Map picker -->
+    <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
+        <div class="border-b border-neutral-800 px-5 py-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-sky-400">Series map pool</p>
+            <h3 class="mt-1 text-lg font-semibold text-white">Select maps 1&ndash;5</h3>
+            <p class="mt-1 text-sm text-neutral-400">
+                Pick the two teams and the map for each game in the series to generate matchup- and map-specific suggestions.
+            </p>
+        </div>
+        <form method="get" class="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:flex-wrap sm:items-end">
+            <div class="flex flex-col gap-1">
+                <label for="id_team_a" class="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    Team 1
+                </label>
+                <div class="relative">
+                    <select id="id_team_a" name="team_a"
+                        class="w-full min-w-[11rem] cursor-pointer appearance-none rounded-xl border border-neutral-700 bg-neutral-950 py-1.5 pl-3 pr-8 text-sm font-medium text-neutral-200 shadow-inner shadow-black/20 transition hover:border-neutral-600 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400/40">
+                        <option value=""{% if not team_a %} selected{% endif %}>&mdash;</option>
+                        {% for team_name in team_choices %}
+                        <option value="{{ team_name }}"{% if team_a == team_name %} selected{% endif %}>{{ team_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <svg class="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label for="id_team_b" class="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    Team 2
+                </label>
+                <div class="relative">
+                    <select id="id_team_b" name="team_b"
+                        class="w-full min-w-[11rem] cursor-pointer appearance-none rounded-xl border border-neutral-700 bg-neutral-950 py-1.5 pl-3 pr-8 text-sm font-medium text-neutral-200 shadow-inner shadow-black/20 transition hover:border-neutral-600 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400/40">
+                        <option value=""{% if not team_b %} selected{% endif %}>&mdash;</option>
+                        {% for team_name in team_choices %}
+                        <option value="{{ team_name }}"{% if team_b == team_name %} selected{% endif %}>{{ team_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <svg class="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+            {% for slot in map_slots %}
+            <div class="flex flex-col gap-1">
+                <label for="id_{{ slot.field_name }}" class="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    Map {{ slot.game_number }}
+                </label>
+                <div class="relative">
+                    <select id="id_{{ slot.field_name }}" name="{{ slot.field_name }}"
+                        class="w-full min-w-[9rem] cursor-pointer appearance-none rounded-xl border border-neutral-700 bg-neutral-950 py-1.5 pl-3 pr-8 text-sm font-medium text-neutral-200 shadow-inner shadow-black/20 transition hover:border-neutral-600 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400/40">
+                        <option value=""{% if not slot.selected %} selected{% endif %}>&mdash;</option>
+                        {% for map_name in map_choices %}
+                        <option value="{{ map_name }}"{% if slot.selected == map_name %} selected{% endif %}>{{ map_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <svg class="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
             {% endfor %}
-        </ul>
-    </article>
-{% empty %}
-    <p>No games have been recorded.</p>
-{% endfor %}
+            <div class="flex w-full justify-center">
+                <button type="submit" class="rounded-full border border-sky-400/30 bg-sky-400/10 px-5 py-2.5 text-sm font-semibold text-sky-300 transition hover:bg-sky-400/20">
+                    Get suggestions
+                </button>
+            </div>
+        </form>
+        {% if edges %}
+        {% regroup edges by matchup_label as matchup_groups %}
+        <div class="border-t border-neutral-800">
+            {% for matchup in matchup_groups %}
+            <div class="border-b border-neutral-800 bg-neutral-950/40 px-5 py-2">
+                <p class="text-xs font-semibold uppercase tracking-wide text-violet-300">{{ matchup.grouper }}</p>
+            </div>
+            <div class="divide-y divide-neutral-800">
+                {% for edge in matchup.list %}
+                <div class="flex items-center justify-between px-5 py-3 text-sm">
+                    <div>
+                        <p class="font-medium text-neutral-200">{{ edge.player_name }}</p>
+                        <p class="text-xs text-neutral-500">
+                            {% if edge.market_scope == 'GAMES_1_3' %}Games 1-3{% else %}Map {{ edge.series_game_number }}{% endif %}
+                            &middot; {{ edge.stat_type }} &middot; line {{ edge.line }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-neutral-500">projection {{ edge.projection|floatformat:2 }}</p>
+                        <p class="font-semibold {% if 'OVER' in edge.recommendation %}text-emerald-300{% elif 'UNDER' in edge.recommendation %}text-rose-300{% else %}text-neutral-400{% endif %}">
+                            {{ edge.recommendation }}
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% elif request.GET %}
+        <p class="border-t border-neutral-800 px-5 py-6 text-center text-sm text-neutral-500">
+            No suggestions for the selected maps yet.
+        </p>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Upcoming matches -->
+        <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
+            <div class="border-b border-neutral-800 px-5 py-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-violet-400">Schedule</p>
+                <h3 class="mt-1 text-lg font-semibold text-white">Upcoming matches</h3>
+            </div>
+            <div class="divide-y divide-neutral-800">
+                {% for match in upcoming_matches %}
+                <div class="flex items-center justify-between px-5 py-4">
+                    <p class="font-medium text-neutral-200">{{ match.team_name }} vs. {{ match.opponent_name }}</p>
+                    <time class="text-sm text-neutral-400" datetime="{{ match.scheduled_at|date:'c' }}">
+                        {{ match.scheduled_at|date:"M j, g:i A" }}
+                    </time>
+                </div>
+                {% empty %}
+                <p class="px-5 py-10 text-center text-sm text-neutral-500">No upcoming matches scheduled.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Hit rate tracker -->
+        <div class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
+            <div class="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-400">Suggestion vs. result</p>
+                    <h3 class="mt-1 text-lg font-semibold text-white">Hit rate tracker</h3>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold text-white">
+                        {% if hit_rate.rate is not None %}{{ hit_rate.rate|floatformat:0 }}%{% else %}&mdash;{% endif %}
+                    </p>
+                    <p class="text-xs text-neutral-500">{{ hit_rate.hits }}/{{ hit_rate.decided }} correct</p>
+                </div>
+            </div>
+            <div class="divide-y divide-neutral-800">
+                {% for entry in hit_rate.entries %}
+                <div class="flex items-center justify-between px-5 py-3 text-sm">
+                    <div>
+                        <p class="font-medium text-neutral-200">{{ entry.player_name }}</p>
+                        <p class="text-xs text-neutral-500">{{ entry.market_display }} &middot; line {{ entry.line|floatformat:1 }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-neutral-500">picked {{ entry.suggestion|default:"—" }}</p>
+                        <p class="font-semibold {% if entry.is_hit %}text-emerald-300{% elif entry.outcome == 'PUSH' %}text-amber-300{% else %}text-rose-300{% endif %}">
+                            {{ entry.outcome }}{% if entry.actual_value is not None %} ({{ entry.actual_value }}){% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="px-5 py-10 text-center text-sm text-neutral-500">No resolved lines yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent results -->
+    <div>
+        <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-white">Recent results</h3>
+            <a href="{% url 'matches' %}" class="text-sm text-neutral-400 hover:text-white">View all matches &rarr;</a>
+        </div>
+        <div class="space-y-3">
+            {% for game in games %}
+            <div class="flex flex-col gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="font-medium text-neutral-200">{{ game.game_map.name }} &middot; {{ game.mode.name }}</p>
+                    <p class="text-sm text-neutral-500">{{ game.matchup_label }} &middot; {{ game.stage.name }}</p>
+                </div>
+                <time class="text-sm text-neutral-400" datetime="{{ game.event_date|date:'c' }}">
+                    {{ game.event_date|date:"M j, Y" }}
+                </time>
+            </div>
+            {% empty %}
+            <div class="rounded-2xl border border-dashed border-neutral-800 px-6 py-12 text-center">
+                <p class="text-sm text-neutral-500">No games have been recorded.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const teamA = document.getElementById('id_team_a');
+        const teamB = document.getElementById('id_team_b');
+        if (!teamA || !teamB) return;
+
+        function excludeChosen(source, target) {
+            const chosen = source.value;
+            for (const option of target.options) {
+                option.disabled = Boolean(chosen) && option.value === chosen;
+            }
+        }
+
+        function syncTeamOptions() {
+            excludeChosen(teamA, teamB);
+            excludeChosen(teamB, teamA);
+        }
+
+        teamA.addEventListener('change', syncTeamOptions);
+        teamB.addEventListener('change', syncTeamOptions);
+        syncTeamOptions();
+    });
+</script>
 {% endblock %}

@@ -6,7 +6,7 @@ import re
 
 from django.db import transaction
 
-from .models import (
+from ..models import (
     BettingProvider,
     Game,
     MarketScope,

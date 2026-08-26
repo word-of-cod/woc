@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from src.underdog_service import resolve_unresolved_markets
+from src.services.underdog import resolve_unresolved_markets
 
 
 class Command(BaseCommand):

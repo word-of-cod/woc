@@ -65,7 +65,7 @@ def make_client_mock(stats, events=None, matches=None, teams=None, modes=None, m
     return client
 
 
-@patch('src.management.commands.pull_breakingpoint_stats.BreakingPointClient')
+@patch('src.services.breakingpoint.BreakingPointClient')
 class PullBreakingPointStatsCommandTests(TestCase):
     def test_creates_expected_records(self, mock_client_cls):
         stats = [
@@ -138,13 +138,24 @@ class PullBreakingPointStatsCommandTests(TestCase):
 
         self.assertEqual(Game.objects.count(), 0)
 
-    def test_skips_game_with_unrecognized_event_type(self, mock_client_cls):
-        stats = [make_stat_row(event_type='')]
+    def test_skips_game_when_event_date_falls_outside_stage_window(self, mock_client_cls):
+        stats = [make_stat_row(datetime='2025-01-01T12:00:00+00:00')]
         mock_client_cls.return_value = make_client_mock(stats)
 
         call_command('pull_breakingpoint_stats', season=2026, players='Huke', verbosity=0)
 
         self.assertEqual(Game.objects.count(), 0)
+        self.assertEqual(PlayerGameStat.objects.count(), 0)
+        self.assertEqual(CompetitionStage.objects.get().name, 'Major 1')
+
+    def test_unrecognized_event_type_is_recorded_as_other(self, mock_client_cls):
+        stats = [make_stat_row(event_type='')]
+        mock_client_cls.return_value = make_client_mock(stats)
+
+        call_command('pull_breakingpoint_stats', season=2026, players='Huke', verbosity=0)
+
+        self.assertEqual(Game.objects.count(), 1)
+        self.assertEqual(Game.objects.get().get_source_display(), 'Other')
 
     def test_lan_event_type_variant_is_recognized(self, mock_client_cls):
         stats = [make_stat_row(event_type='LAN')]
