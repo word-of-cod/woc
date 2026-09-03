@@ -238,6 +238,29 @@ class DashboardViewTests(TestCase):
         self.assertContains(response, 'No resolved lines yet.')
         self.assertContains(response, 'No games have been recorded.')
 
+    def test_dashboard_rejects_map_that_is_not_legal_for_slots_mode(self):
+        raid = GameMap.objects.create(name='Raid')
+        search = GameMode.objects.create(name='Search & Destroy')
+        StageMapPoolEntry.objects.create(
+            stage=self.game.stage,
+            game_map=raid,
+            mode=search,
+        )
+
+        response = self.client.get(reverse('dashboard'), {
+            'team_a': 'Team A',
+            'team_b': 'Team B',
+            'map_1': 'Raid',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'That map is not valid for its series slot')
+        self.assertEqual(response.context['edges'], [])
+        map_one = response.context['map_slots'][0]
+        map_two = response.context['map_slots'][1]
+        self.assertNotIn('Raid', map_one['choices'])
+        self.assertIn('Raid', map_two['choices'])
+
 
 @override_settings(
     STORAGES={
