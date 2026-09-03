@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Teams | Word of COD{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-7xl">
+    <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-400">Competition archive</p>
+            <h2 class="text-3xl font-bold tracking-tight text-white">Teams</h2>
+            <p class="mt-2 max-w-3xl text-sm text-neutral-400">
+                Historical team performance from Breaking Point's {{ season }} player-map data, limited to the current four-player CDL roster for each team.
+            </p>
+        </div>
+        <div class="rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-neutral-300">
+            {{ teams|length }} team{{ teams|length|pluralize }} recorded
+        </div>
+    </div>
+
+    {% if latest_major %}
+    <section class="mb-8 overflow-hidden rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-400/10 via-neutral-900 to-neutral-950 shadow-xl shadow-black/20">
+        <div class="grid gap-6 px-6 py-7 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+            <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-400/10 text-3xl" aria-hidden="true">★</div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">Latest major in the archive</p>
+                <h3 class="mt-2 text-2xl font-bold text-white">{{ latest_major.name }}</h3>
+                <p class="mt-1 text-sm text-neutral-400">
+                    {{ latest_major.start_date|date:"M j" }}–{{ latest_major.end_date|date:"M j, Y" }} · {{ latest_major.maps_played }} map{{ latest_major.maps_played|pluralize }} recorded
+                </p>
+            </div>
+            <p class="max-w-xs text-sm text-neutral-400 sm:text-right">
+                Series results are not yet imported, so this card highlights the most recent Major with recorded maps—not an inferred event winner.
+            </p>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if has_team_stats %}
+    <div class="grid gap-6 lg:grid-cols-2">
+        {% for team in teams %}
+        <article class="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-xl shadow-black/10">
+            <header class="flex items-center justify-between border-b border-neutral-800 bg-gradient-to-r from-neutral-900 to-sky-400/5 px-5 py-4">
+                <div class="flex min-w-0 items-center gap-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-400/10 text-xs font-bold text-sky-300">#{{ team.placement }}</span>
+                    <div class="min-w-0">
+                        <h3 class="truncate text-lg font-semibold text-white">{{ team.team }}</h3>
+                        <p class="mt-0.5 text-xs text-neutral-500">Last map: {{ team.last_played|date:"M j, Y" }}</p>
+                    </div>
+                </div>
+                <span class="ml-4 shrink-0 rounded-full border border-neutral-800 px-3 py-1 text-xs font-medium uppercase tracking-wider text-neutral-400">
+                    {{ team.events_played }} event{{ team.events_played|pluralize }}
+                </span>
+            </header>
+
+            <div class="grid grid-cols-2 divide-x divide-y divide-neutral-800 sm:grid-cols-4">
+                <div class="px-4 py-4 text-center">
+                    <p class="text-xs uppercase tracking-wider text-neutral-500">Maps</p>
+                    <p class="mt-1 text-lg font-semibold text-white">{{ team.maps_played }}</p>
+                </div>
+                <div class="px-4 py-4 text-center">
+                    <p class="text-xs uppercase tracking-wider text-neutral-500">Players</p>
+                    <p class="mt-1 text-lg font-semibold text-white">{{ team.players_recorded }}</p>
+                </div>
+                <div class="px-4 py-4 text-center">
+                    <p class="text-xs uppercase tracking-wider text-neutral-500">Kills</p>
+                    <p class="mt-1 text-lg font-semibold text-emerald-300">{{ team.total_kills }}</p>
+                </div>
+                <div class="px-4 py-4 text-center">
+                    <p class="text-xs uppercase tracking-wider text-neutral-500">K/D</p>
+                    <p class="mt-1 text-lg font-semibold text-sky-300">{% if team.kill_death_ratio is not None %}{{ team.kill_death_ratio|floatformat:2 }}{% else %}&mdash;{% endif %}</p>
+                </div>
+            </div>
+
+            <div class="border-t border-neutral-800 bg-neutral-950/30 px-5 py-3">
+                <a href="{% url 'players' %}#team-{{ team.team|slugify }}" class="text-xs font-semibold uppercase tracking-wider text-neutral-500 transition hover:text-sky-300">
+                    View current roster on Players &rarr;
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <section class="rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/50 px-6 py-16 text-center">
+        <p class="text-lg font-semibold text-neutral-200">No team statistics have been imported for {{ season }}.</p>
+        <p class="mt-2 text-sm text-neutral-500">Run the Breaking Point player-stat sync to populate this archive.</p>
+    </section>
+    {% endif %}
+</section>
+{% endblock %}
