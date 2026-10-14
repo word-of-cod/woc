@@ -1,0 +1,1498 @@
+﻿{
+    "Players":  [
+                    {
+                        "player_id":  1,
+                        "name":  "1201A CoPesea03"
+                    },
+                    {
+                        "player_id":  2,
+                        "name":  "1201B Mr Qlean"
+                    },
+                    {
+                        "player_id":  3,
+                        "name":  "1201C Nilvet"
+                    },
+                    {
+                        "player_id":  4,
+                        "name":  "1201D JitSteppa904"
+                    },
+                    {
+                        "player_id":  5,
+                        "name":  "GinjaNinja"
+                    },
+                    {
+                        "player_id":  6,
+                        "name":  "Samork"
+                    },
+                    {
+                        "player_id":  7,
+                        "name":  "SkiSki"
+                    },
+                    {
+                        "player_id":  8,
+                        "name":  "ScrewyCashew472"
+                    },
+                    {
+                        "player_id":  9,
+                        "name":  "ThePrince16"
+                    },
+                    {
+                        "player_id":  10,
+                        "name":  "realCoachCoen25"
+                    },
+                    {
+                        "player_id":  11,
+                        "name":  "HimmyGladstone02"
+                    },
+                    {
+                        "player_id":  12,
+                        "name":  "Iceman18"
+                    }
+                ],
+    "Matches":  [
+                    {
+                        "match_id":  1,
+                        "source":  "ONLINE",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Colossus",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  13,
+                        "source":  "ONLINE",
+                        "opponent":  "1201",
+                        "map":  "Colossus",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  2,
+                        "source":  "ONLINE",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Raid",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  14,
+                        "source":  "ONLINE",
+                        "opponent":  "1201",
+                        "map":  "Raid",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  3,
+                        "source":  "ONLINE",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Scar",
+                        "mode":  "Overload",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  15,
+                        "source":  "ONLINE",
+                        "opponent":  "1201",
+                        "map":  "Scar",
+                        "mode":  "Overload",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  4,
+                        "source":  "ONLINE",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Scar",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  16,
+                        "source":  "ONLINE",
+                        "opponent":  "1201",
+                        "map":  "Scar",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  5,
+                        "source":  "ONLINE",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Colossus",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  17,
+                        "source":  "ONLINE",
+                        "opponent":  "1201",
+                        "map":  "Colossus",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/08/2026"
+                    },
+                    {
+                        "match_id":  6,
+                        "source":  "LAN",
+                        "opponent":  "1201",
+                        "map":  "Raid",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  18,
+                        "source":  "LAN",
+                        "opponent":  "Jacksonville Jaguars",
+                        "map":  "Raid",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  7,
+                        "source":  "LAN",
+                        "opponent":  "1201",
+                        "map":  "Colossus",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  19,
+                        "source":  "LAN",
+                        "opponent":  "Jacksonville Jaguars",
+                        "map":  "Colossus",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  8,
+                        "source":  "LAN",
+                        "opponent":  "1201",
+                        "map":  "Raid",
+                        "mode":  "Overload",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  20,
+                        "source":  "LAN",
+                        "opponent":  "Jacksonville Jaguars",
+                        "map":  "Raid",
+                        "mode":  "Overload",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  9,
+                        "source":  "LAN",
+                        "opponent":  "1201",
+                        "map":  "Scar",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  21,
+                        "source":  "LAN",
+                        "opponent":  "Jacksonville Jaguars",
+                        "map":  "Scar",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/09/2026"
+                    },
+                    {
+                        "match_id":  10,
+                        "source":  "LAN",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Colossus",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/10/2026"
+                    },
+                    {
+                        "match_id":  22,
+                        "source":  "LAN",
+                        "opponent":  "Jacksonville Jaguars",
+                        "map":  "Colossus",
+                        "mode":  "Hardpoint",
+                        "event_date":  "08/10/2026"
+                    },
+                    {
+                        "match_id":  11,
+                        "source":  "LAN",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Raid",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/10/2026"
+                    },
+                    {
+                        "match_id":  23,
+                        "source":  "LAN",
+                        "opponent":  "Jacksonville Jaguars",
+                        "map":  "Raid",
+                        "mode":  "Search and Destroy",
+                        "event_date":  "08/10/2026"
+                    },
+                    {
+                        "match_id":  12,
+                        "source":  "LAN",
+                        "opponent":  "Ball Lovers",
+                        "map":  "Scar",
+                        "mode":  "Overload",
+                        "event_date":  "08/10/2026"
+                    },
+                    {
+                        "match_id":  24,
+                        "source":  "LAN",
+                        "opponent":  "Jacksonville Jaguars",
+                        "map":  "Scar",
+                        "mode":  "Overload",
+                        "event_date":  "08/10/2026"
+                    }
+                ],
+    "Player_Match_Stats":  [
+                               {
+                                   "player_id":  1,
+                                   "match_id":  1,
+                                   "kills":  29,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  1,
+                                   "kills":  22,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  1,
+                                   "kills":  24,
+                                   "deaths":  18,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  1,
+                                   "kills":  20,
+                                   "deaths":  30,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  13,
+                                   "kills":  28,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  13,
+                                   "kills":  17,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  13,
+                                   "kills":  32,
+                                   "deaths":  25,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  13,
+                                   "kills":  30,
+                                   "deaths":  29,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  2,
+                                   "kills":  5,
+                                   "deaths":  8,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  2,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  2,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  2,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  14,
+                                   "kills":  7,
+                                   "deaths":  7,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  14,
+                                   "kills":  5,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  14,
+                                   "kills":  6,
+                                   "deaths":  4,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  14,
+                                   "kills":  3,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  3,
+                                   "kills":  19,
+                                   "deaths":  23,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  3,
+                                   "kills":  20,
+                                   "deaths":  24,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  3,
+                                   "kills":  20,
+                                   "deaths":  24,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  3,
+                                   "kills":  20,
+                                   "deaths":  24,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  15,
+                                   "kills":  21,
+                                   "deaths":  25,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  15,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  15,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  15,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  4,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  4,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  4,
+                                   "kills":  23,
+                                   "deaths":  27,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  4,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  16,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  16,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  16,
+                                   "kills":  25,
+                                   "deaths":  29,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  16,
+                                   "kills":  26,
+                                   "deaths":  30,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  5,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  5,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  5,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  5,
+                                   "kills":  7,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  17,
+                                   "kills":  5,
+                                   "deaths":  8,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  17,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  17,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  17,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  9,
+                                   "match_id":  6,
+                                   "kills":  20,
+                                   "deaths":  24,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  10,
+                                   "match_id":  6,
+                                   "kills":  21,
+                                   "deaths":  25,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  11,
+                                   "match_id":  6,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  12,
+                                   "match_id":  6,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  18,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  18,
+                                   "kills":  23,
+                                   "deaths":  27,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  18,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  18,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  9,
+                                   "match_id":  7,
+                                   "kills":  5,
+                                   "deaths":  8,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  10,
+                                   "match_id":  7,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  11,
+                                   "match_id":  7,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  12,
+                                   "match_id":  7,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  19,
+                                   "kills":  7,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  19,
+                                   "kills":  7,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  19,
+                                   "kills":  7,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  19,
+                                   "kills":  7,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  9,
+                                   "match_id":  8,
+                                   "kills":  20,
+                                   "deaths":  24,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  10,
+                                   "match_id":  8,
+                                   "kills":  20,
+                                   "deaths":  24,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  11,
+                                   "match_id":  8,
+                                   "kills":  21,
+                                   "deaths":  25,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  12,
+                                   "match_id":  8,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  20,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  20,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  20,
+                                   "kills":  23,
+                                   "deaths":  27,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  20,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  9,
+                                   "match_id":  9,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  10,
+                                   "match_id":  9,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  11,
+                                   "match_id":  9,
+                                   "kills":  23,
+                                   "deaths":  27,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  12,
+                                   "match_id":  9,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  1,
+                                   "match_id":  21,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  2,
+                                   "match_id":  21,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  3,
+                                   "match_id":  21,
+                                   "kills":  25,
+                                   "deaths":  29,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  4,
+                                   "match_id":  21,
+                                   "kills":  26,
+                                   "deaths":  30,
+                                   "team_at_match_time":  "1201"
+                               },
+                               {
+                                   "player_id":  9,
+                                   "match_id":  10,
+                                   "kills":  21,
+                                   "deaths":  25,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  10,
+                                   "match_id":  10,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  11,
+                                   "match_id":  10,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  12,
+                                   "match_id":  10,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  22,
+                                   "kills":  23,
+                                   "deaths":  27,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  22,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  22,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  22,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  9,
+                                   "match_id":  11,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  10,
+                                   "match_id":  11,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  11,
+                                   "match_id":  11,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  12,
+                                   "match_id":  11,
+                                   "kills":  7,
+                                   "deaths":  10,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  23,
+                                   "kills":  5,
+                                   "deaths":  8,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  23,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  23,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  23,
+                                   "kills":  6,
+                                   "deaths":  9,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  9,
+                                   "match_id":  12,
+                                   "kills":  21,
+                                   "deaths":  25,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  10,
+                                   "match_id":  12,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  11,
+                                   "match_id":  12,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  12,
+                                   "match_id":  12,
+                                   "kills":  22,
+                                   "deaths":  26,
+                                   "team_at_match_time":  "Jacksonville Jaguars"
+                               },
+                               {
+                                   "player_id":  5,
+                                   "match_id":  24,
+                                   "kills":  23,
+                                   "deaths":  27,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  6,
+                                   "match_id":  24,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  7,
+                                   "match_id":  24,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               },
+                               {
+                                   "player_id":  8,
+                                   "match_id":  24,
+                                   "kills":  24,
+                                   "deaths":  28,
+                                   "team_at_match_time":  "Ball Lovers"
+                               }
+                           ],
+    "BETTING_LINES":  [
+                          {
+                              "player_id":  1,
+                              "match_id":  1,
+                              "market":  "M1",
+                              "line":  21.5
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  1,
+                              "market":  "M1",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  1,
+                              "market":  "M1",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  1,
+                              "market":  "M1",
+                              "line":  23.0
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  13,
+                              "market":  "M1",
+                              "line":  23.5
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  13,
+                              "market":  "M1",
+                              "line":  24.0
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  13,
+                              "market":  "M1",
+                              "line":  24.5
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  13,
+                              "market":  "M1",
+                              "line":  25.0
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  2,
+                              "market":  "M2",
+                              "line":  5.0
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  2,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  2,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  2,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  14,
+                              "market":  "M2",
+                              "line":  7.0
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  14,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  14,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  14,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  3,
+                              "market":  "M3",
+                              "line":  19.0
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  3,
+                              "market":  "M3",
+                              "line":  19.5
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  3,
+                              "market":  "M3",
+                              "line":  20.0
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  3,
+                              "market":  "M3",
+                              "line":  20.5
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  15,
+                              "market":  "M3",
+                              "line":  21.0
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  15,
+                              "market":  "M3",
+                              "line":  21.5
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  15,
+                              "market":  "M3",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  15,
+                              "market":  "M3",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  4,
+                              "market":  "M1",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  4,
+                              "market":  "M1",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  4,
+                              "market":  "M1",
+                              "line":  23.0
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  4,
+                              "market":  "M1",
+                              "line":  23.5
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  16,
+                              "market":  "M1",
+                              "line":  24.0
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  16,
+                              "market":  "M1",
+                              "line":  24.5
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  16,
+                              "market":  "M1",
+                              "line":  25.0
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  16,
+                              "market":  "M1",
+                              "line":  25.5
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  5,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  5,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  5,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  5,
+                              "market":  "M2",
+                              "line":  7.0
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  17,
+                              "market":  "M2",
+                              "line":  5.0
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  17,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  17,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  17,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  9,
+                              "match_id":  6,
+                              "market":  "M1",
+                              "line":  20.5
+                          },
+                          {
+                              "player_id":  10,
+                              "match_id":  6,
+                              "market":  "M1",
+                              "line":  21.0
+                          },
+                          {
+                              "player_id":  11,
+                              "match_id":  6,
+                              "market":  "M1",
+                              "line":  21.5
+                          },
+                          {
+                              "player_id":  12,
+                              "match_id":  6,
+                              "market":  "M1",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  18,
+                              "market":  "M1",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  18,
+                              "market":  "M1",
+                              "line":  23.0
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  18,
+                              "market":  "M1",
+                              "line":  23.5
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  18,
+                              "market":  "M1",
+                              "line":  24.0
+                          },
+                          {
+                              "player_id":  9,
+                              "match_id":  7,
+                              "market":  "M2",
+                              "line":  5.0
+                          },
+                          {
+                              "player_id":  10,
+                              "match_id":  7,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  11,
+                              "match_id":  7,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  12,
+                              "match_id":  7,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  19,
+                              "market":  "M2",
+                              "line":  7.0
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  19,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  19,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  19,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  9,
+                              "match_id":  8,
+                              "market":  "M3",
+                              "line":  20.0
+                          },
+                          {
+                              "player_id":  10,
+                              "match_id":  8,
+                              "market":  "M3",
+                              "line":  20.5
+                          },
+                          {
+                              "player_id":  11,
+                              "match_id":  8,
+                              "market":  "M3",
+                              "line":  21.0
+                          },
+                          {
+                              "player_id":  12,
+                              "match_id":  8,
+                              "market":  "M3",
+                              "line":  21.5
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  20,
+                              "market":  "M3",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  20,
+                              "market":  "M3",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  20,
+                              "market":  "M3",
+                              "line":  23.0
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  20,
+                              "market":  "M3",
+                              "line":  23.5
+                          },
+                          {
+                              "player_id":  9,
+                              "match_id":  9,
+                              "market":  "M1",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  10,
+                              "match_id":  9,
+                              "market":  "M1",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  11,
+                              "match_id":  9,
+                              "market":  "M1",
+                              "line":  23.0
+                          },
+                          {
+                              "player_id":  12,
+                              "match_id":  9,
+                              "market":  "M1",
+                              "line":  23.5
+                          },
+                          {
+                              "player_id":  1,
+                              "match_id":  21,
+                              "market":  "M1",
+                              "line":  24.0
+                          },
+                          {
+                              "player_id":  2,
+                              "match_id":  21,
+                              "market":  "M1",
+                              "line":  24.5
+                          },
+                          {
+                              "player_id":  3,
+                              "match_id":  21,
+                              "market":  "M1",
+                              "line":  25.0
+                          },
+                          {
+                              "player_id":  4,
+                              "match_id":  21,
+                              "market":  "M1",
+                              "line":  25.5
+                          },
+                          {
+                              "player_id":  9,
+                              "match_id":  10,
+                              "market":  "M1",
+                              "line":  21.0
+                          },
+                          {
+                              "player_id":  10,
+                              "match_id":  10,
+                              "market":  "M1",
+                              "line":  21.5
+                          },
+                          {
+                              "player_id":  11,
+                              "match_id":  10,
+                              "market":  "M1",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  12,
+                              "match_id":  10,
+                              "market":  "M1",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  22,
+                              "market":  "M1",
+                              "line":  23.0
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  22,
+                              "market":  "M1",
+                              "line":  23.5
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  22,
+                              "market":  "M1",
+                              "line":  24.0
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  22,
+                              "market":  "M1",
+                              "line":  24.5
+                          },
+                          {
+                              "player_id":  9,
+                              "match_id":  11,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  10,
+                              "match_id":  11,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  11,
+                              "match_id":  11,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  12,
+                              "match_id":  11,
+                              "market":  "M2",
+                              "line":  7.0
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  23,
+                              "market":  "M2",
+                              "line":  5.0
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  23,
+                              "market":  "M2",
+                              "line":  5.5
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  23,
+                              "market":  "M2",
+                              "line":  6.0
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  23,
+                              "market":  "M2",
+                              "line":  6.5
+                          },
+                          {
+                              "player_id":  9,
+                              "match_id":  12,
+                              "market":  "M3",
+                              "line":  21.0
+                          },
+                          {
+                              "player_id":  10,
+                              "match_id":  12,
+                              "market":  "M3",
+                              "line":  21.5
+                          },
+                          {
+                              "player_id":  11,
+                              "match_id":  12,
+                              "market":  "M3",
+                              "line":  22.0
+                          },
+                          {
+                              "player_id":  12,
+                              "match_id":  12,
+                              "market":  "M3",
+                              "line":  22.5
+                          },
+                          {
+                              "player_id":  5,
+                              "match_id":  24,
+                              "market":  "M3",
+                              "line":  23.0
+                          },
+                          {
+                              "player_id":  6,
+                              "match_id":  24,
+                              "market":  "M3",
+                              "line":  23.5
+                          },
+                          {
+                              "player_id":  7,
+                              "match_id":  24,
+                              "market":  "M3",
+                              "line":  24.0
+                          },
+                          {
+                              "player_id":  8,
+                              "match_id":  24,
+                              "market":  "M3",
+                              "line":  24.5
+                          }
+                      ]
+}

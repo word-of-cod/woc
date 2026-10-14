@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}World of COD{% endblock %}</title>
+    <title>{% block title %}Word of COD{% endblock %}</title>
 
     {% tailwind_css %}
 
@@ -20,25 +20,54 @@
             <!-- LEFT: LOGO -->
             <div class="flex items-center gap-4">
                 <img src="{% static 'images/word_of_cod_compressed.jpg' %}"
-                     alt="World of COD Logo"
+                     alt="Word of COD Logo"
                      class="h-20 rounded-md object-cover">
-                <h1 class="text-xl font-bold text-white">World of COD</h1>
+                <h1 class="text-xl font-bold text-white">Word of COD</h1>
             </div>
 
             <!-- NAV LINKS -->
             <nav class="flex items-center gap-6 text-sm">
-                <a href="/" class="text-neutral-400 hover:text-white transition">Dashboard</a>
-                <a href="/matches/" class="text-neutral-400 hover:text-white transition">Matches</a>
-                <a href="/players/" class="text-neutral-400 hover:text-white transition">Players</a>
-                <a href="/teams/" class="text-neutral-400 hover:text-white transition">Teams</a>
+                <a href="{% url 'dashboard' %}"
+                   class="{% if request.resolver_match.url_name == 'dashboard' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
+                    Dashboard
+                </a>
+                <a href="{% url 'matches' %}"
+                   class="{% if request.resolver_match.url_name == 'matches' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
+                    Matches
+                </a>
+                <a href="{% url 'players' %}"
+                   class="{% if request.resolver_match.url_name == 'players' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
+                    Players
+                </a>
+                <a href="{% url 'teams' %}"
+                   class="{% if request.resolver_match.url_name == 'teams' %}text-white{% else %}text-neutral-400{% endif %} hover:text-white transition">
+                    Teams
+                </a>
             </nav>
         </div>
     </header>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div class="px-10 pt-8">
+        <div class="mx-auto max-w-7xl space-y-2">
+            {% for message in messages %}
+            <div class="rounded-xl border px-4 py-3 text-sm
+                {% if message.tags == 'error' %}border-rose-500/30 bg-rose-500/10 text-rose-200
+                {% elif message.tags == 'warning' %}border-amber-500/30 bg-amber-500/10 text-amber-200
+                {% else %}border-emerald-500/30 bg-emerald-500/10 text-emerald-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- PAGE CONTENT -->
     <main class="px-10 py-10">
         {% block content %}{% endblock %}
     </main>
 
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
