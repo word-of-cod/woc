@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
-from pathlib import Path
 from typing import Iterable
 from src.models import PlayerGameStat, UnderdogMarket
 from src.pro_teams import normalize_team_name
-from src.tests import test_algo1
 
 #class from claude 
 @dataclass
@@ -39,11 +37,25 @@ def find_edges(
     team_names: tuple[str, str] | None = None,
 ) -> list[Edge]:
     markets = load_underdog_markets()
+    selected_maps = selected_maps or {}
     if team_names:
         wanted_pair = {normalize_team_name(name) for name in team_names}
         markets = [
             market for market in markets
             if {normalize_team_name(market.team_name), normalize_team_name(market.opponent_name)} == wanted_pair
+        ]
+    if selected_maps:
+        selected_game_numbers = set(selected_maps)
+        has_complete_aggregate = {1, 2, 3}.issubset(selected_game_numbers)
+        markets = [
+            market for market in markets
+            if (
+                market.market_scope == "SINGLE_GAME"
+                and market.series_game_number in selected_game_numbers
+            ) or (
+                market.market_scope == "GAMES_1_3"
+                and has_complete_aggregate
+            )
         ]
     player_ids = {market.player_id for market in markets}
     histories = load_player_histories(player_ids)
@@ -51,40 +63,52 @@ def find_edges(
 
     for market in markets:
         player_history = histories.get(market.player_id, [])
-        map_name = (selected_maps or {}).get(market.series_game_number)
-
-        #when the caller has picked an actual map for this game slot (e.g. from the
-        #dashboard's map picker), filter history by that map directly instead of
-        #falling back to the mode-based proxy below.
-        if map_name:
-            history = filterByMap(player_history, map_name)
-            #prefer this player's history against this specific opponent on this map
-            #(the actual upcoming matchup), but only if there's any such history --
-            #head-to-head samples are small in esports, so falling back to all-opponent
-            #history on the map beats having no projection at all.
-            if market.opponent_name:
-                matchup_history = filterByOpponent(history, market.opponent_name)
-                if matchup_history:
-                    history = matchup_history
+        if market.market_scope == "GAMES_1_3" and selected_maps:
+            summaries = [
+                calculate_average(
+                    stats=history_for_map_slot(
+                        player_history,
+                        game_number,
+                        selected_maps.get(game_number),
+                        market.opponent_name,
+                    ),
+                    stat_type=market.stat_type,
+                )
+                for game_number in range(1, 4)
+            ]
+            # A series projection needs a usable sample for every included map.
+            # Returning no edge is safer than silently substituting zero for a map.
+            if any(summary.games_used < min_games for summary in summaries):
+                continue
+            projection = sum(
+                (summary.average for summary in summaries),
+                start=Decimal("0"),
+            )
         else:
-            history = filterByMode(player_history, market.market_scope, market.series_game_number)
+            history = history_for_market(
+                player_history,
+                market.market_scope,
+                market.series_game_number,
+                selected_maps,
+                market.opponent_name,
+            )
 
-        #claude added this lookback_games param to limit the number of games to look back on. i have removed for now.
+            #claude added this lookback_games param to limit the number of games to look back on. i have removed for now.
         #in general we are going to use the entire history. i might weigh more recent performances harder, but that is all.
         #i cant think of a scenario where we would want to limit the number of games to look back on. if we do, we can add this back in.
         #need to remove the lookback_games param from the function signature if we remove this.
         #if lookback_games is not None:
         #    history = history[:lookback_games]
 
-        summary = calculate_average(
-            stats=history,
-            stat_type=market.stat_type,
-        )
+            summary = calculate_average(
+                stats=history,
+                stat_type=market.stat_type,
+            )
 
-        if summary.games_used < min_games:
-            continue
+            if summary.games_used < min_games:
+                continue
 
-        projection = summary.average * games_in_scope(market.market_scope)
+            projection = summary.average * games_in_scope(market.market_scope)
 
         difference, recommendation = calculate_edge(
             projection=projection,
@@ -291,7 +315,7 @@ def load_player_histories(player_ids: Iterable[int]) -> dict[int, list[PlayerGam
     #uncomment the below for test data querying out of test_algo1.py
     #return test_algo1.testPlayerHistory
 
-def filterByMode(player_history: list[PlayerGameStat], marketScope: str, gameNumber: int) -> list[PlayerGameStat]:
+def filterByMode(player_history: list[PlayerGameStat], marketScope: str, gameNumber: int | None) -> list[PlayerGameStat]:
     if marketScope == "SINGLE_GAME" and gameNumber == 1:
         return [stat for stat in player_history if stat.game.mode.name.upper() == "HARDPOINT"]
     elif marketScope == "SINGLE_GAME" and gameNumber == 2:
@@ -304,7 +328,11 @@ def filterByMode(player_history: list[PlayerGameStat], marketScope: str, gameNum
         return []
 
 def filterByMap(player_history: list[PlayerGameStat], mapName: str) -> list[PlayerGameStat]:
-    return [stat for stat in player_history if stat.game.game_map.name == mapName]
+    normalized_map = mapName.strip().casefold()
+    return [
+        stat for stat in player_history
+        if stat.game.game_map.name.strip().casefold() == normalized_map
+    ]
 
 def filterByOpponent(player_history: list[PlayerGameStat], opponentName: str) -> list[PlayerGameStat]:
     normalized_opponent = normalize_team_name(opponentName)
@@ -313,8 +341,41 @@ def filterByOpponent(player_history: list[PlayerGameStat], opponentName: str) ->
         if normalize_team_name(stat.game.opponent) == normalized_opponent
     ]
 
-def getMapName() -> str:
-    return "map1"  # Placeholder implementation; replace with actual logic to determine the map name later
+def history_for_map_slot(
+    player_history: list[PlayerGameStat],
+    game_number: int,
+    map_name: str | None,
+    opponent_name: str,
+) -> list[PlayerGameStat]:
+    """Return history relevant to one slot in an upcoming series."""
+    history = filterByMode(player_history, "SINGLE_GAME", game_number)
+    if map_name:
+        history = filterByMap(history, map_name)
+
+    # Head-to-head data is useful when it exists, but an all-opponent map sample
+    # is preferable to dropping an otherwise valid projection.
+    if opponent_name:
+        matchup_history = filterByOpponent(history, opponent_name)
+        if matchup_history:
+            return matchup_history
+    return history
+
+
+def history_for_market(
+    player_history: list[PlayerGameStat],
+    market_scope: str,
+    game_number: int | None,
+    selected_maps: dict[int, str],
+    opponent_name: str,
+) -> list[PlayerGameStat]:
+    if market_scope == "SINGLE_GAME" and game_number is not None:
+        return history_for_map_slot(
+            player_history,
+            game_number,
+            selected_maps.get(game_number),
+            opponent_name,
+        )
+    return filterByMode(player_history, market_scope, game_number)
 
 def main() -> None:
     edges = find_edges()

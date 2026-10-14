@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from .algorithm import find_edges, list_team_names
 from .analytics import evaluate_betting_line, hit_rate_summary, matchup_label
 from .breakingpoint_client import BreakingPointError
-from .models import GameMap
+from .models import CompetitionStage, StageMapPoolEntry, UnderdogMarket
 from .pro_teams import PRO_TEAM_NAMES, normalize_team_name
 from .selectors import (
     games_for_matches_page,
@@ -22,6 +23,52 @@ from .selectors import (
 from .services.breakingpoint import sync_breakingpoint_stats
 
 MAP_PICKER_SLOTS = range(1, 6)
+SLOT_MODE_NAMES = {
+    1: ('Hardpoint',),
+    2: ('Search & Destroy', 'Search and Destroy'),
+    3: ('Overload',),
+    4: ('Hardpoint',),
+    5: ('Search & Destroy', 'Search and Destroy'),
+}
+
+
+def map_choices_for_matchup(team_pair=None):
+    """Return legal maps per series slot for the matchup's competition stage."""
+    pool = StageMapPoolEntry.objects.all()
+    if team_pair:
+        team_a, team_b = team_pair
+        market = (
+            UnderdogMarket.objects
+            .filter(
+                Q(team_name__iexact=team_a, opponent_name__iexact=team_b)
+                | Q(team_name__iexact=team_b, opponent_name__iexact=team_a),
+                scheduled_at__isnull=False,
+            )
+            .order_by('-scheduled_at')
+            .first()
+        )
+        if market:
+            stage = (
+                CompetitionStage.objects
+                .filter(
+                    start_date__lte=market.scheduled_at.date(),
+                    end_date__gte=market.scheduled_at.date(),
+                )
+                .order_by('-start_date')
+                .first()
+            )
+            if stage:
+                pool = pool.filter(stage=stage)
+
+    return {
+        game_number: list(
+            pool.filter(mode__name__in=mode_names)
+            .values_list('game_map__name', flat=True)
+            .distinct()
+            .order_by('game_map__name')
+        )
+        for game_number, mode_names in SLOT_MODE_NAMES.items()
+    }
 
 
 def dashboard(request):
@@ -30,26 +77,30 @@ def dashboard(request):
         team_names = sorted({stat.team for stat in game.player_stats.all()})
         game.matchup_label = matchup_label(team_names=team_names, opponent=game.opponent)
 
-    map_choices = list(GameMap.objects.values_list('name', flat=True))
+    team_choices = list_team_names()
+    team_a = request.GET.get('team_a', '').strip()
+    team_b = request.GET.get('team_b', '').strip()
+    team_pair = (team_a, team_b) if team_a and team_b else None
+    map_choices = map_choices_for_matchup(team_pair)
     map_slots = []
     for game_number in MAP_PICKER_SLOTS:
         map_slots.append({
             'game_number': game_number,
             'field_name': f'map_{game_number}',
             'selected': request.GET.get(f'map_{game_number}', '').strip(),
+            'choices': map_choices[game_number],
         })
-    selected_maps = {
+    invalid_map_slots = [
+        slot for slot in map_slots
+        if slot['selected'] and slot['selected'] not in slot['choices']
+    ]
+    selected_maps = {} if invalid_map_slots else {
         slot['game_number']: slot['selected'] for slot in map_slots if slot['selected']
     }
 
-    team_choices = list_team_names()
-    team_a = request.GET.get('team_a', '').strip()
-    team_b = request.GET.get('team_b', '').strip()
-    team_pair = (team_a, team_b) if team_a and team_b else None
-
     edges = (
         find_edges(selected_maps=selected_maps, team_names=team_pair)
-        if selected_maps or team_pair
+        if not invalid_map_slots and (selected_maps or team_pair)
         else []
     )
     for edge in edges:
@@ -68,6 +119,7 @@ def dashboard(request):
             'hit_rate': hit_rate_summary(limit=8),
             'map_choices': map_choices,
             'map_slots': map_slots,
+            'invalid_map_slots': invalid_map_slots,
             'team_choices': team_choices,
             'team_a': team_a,
             'team_b': team_b,
