@@ -36,6 +36,19 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# Railway sets RAILWAY_PUBLIC_DOMAIN (e.g. woc-production.up.railway.app)
+RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
+if RAILWAY_PUBLIC_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_PUBLIC_DOMAIN}')
+
 BREAKINGPOINT_BASE_URL = os.environ.get(
     'BREAKINGPOINT_BASE_URL',
     'https://dfpiiufxcciujugzjvgx.supabase.co/rest/v1',
