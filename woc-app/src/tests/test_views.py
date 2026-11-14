@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from src.breakingpoint_client import BreakingPointError
 from src.services.breakingpoint import BreakingPointSyncResult
+from src.pro_teams import PRO_TEAM_NAMES
 from src.models import (
     BettingLine,
     BettingMarket,
@@ -260,6 +261,58 @@ class DashboardViewTests(TestCase):
         map_two = response.context['map_slots'][1]
         self.assertNotIn('Raid', map_one['choices'])
         self.assertIn('Raid', map_two['choices'])
+
+    def test_dashboard_team_dropdowns_list_pro_teams_without_market_data(self):
+        UnderdogMarket.objects.all().delete()
+
+        response = self.client.get(reverse('dashboard'))
+
+        self.assertEqual(response.context['team_choices'], list(PRO_TEAM_NAMES))
+        self.assertContains(response, 'OpTic Texas')
+        self.assertNotContains(response, '<option value="Team C"')
+
+    def test_dashboard_matches_stage_when_underdog_spells_team_differently(self):
+        other_stage = CompetitionStage.objects.create(
+            name='Major 2',
+            season=2026,
+            start_date=date(2026, 3, 1),
+            end_date=date(2026, 4, 30),
+        )
+        StageMapPoolEntry.objects.create(
+            stage=other_stage,
+            game_map=GameMap.objects.create(name='Vault'),
+            mode=GameMode.objects.get(name='Hardpoint'),
+        )
+        UnderdogMarket.objects.filter(external_id='underdog-line-1').update(
+            team_name='OPTIC-TEXAS',
+            opponent_name='los angeles thieves',
+        )
+
+        response = self.client.get(reverse('dashboard'), {
+            'team_a': 'OpTic Texas',
+            'team_b': 'Los Angeles Thieves',
+        })
+
+        map_one = response.context['map_slots'][0]
+        self.assertEqual(map_one['choices'], ['Hacienda'])
+
+    def test_dashboard_shows_message_when_matchup_has_no_lines(self):
+        response = self.client.get(reverse('dashboard'), {
+            'team_a': 'Toronto KOI',
+            'team_b': 'Miami Heretics',
+        })
+
+        self.assertEqual(response.context['edges'], [])
+        self.assertContains(response, 'No Underdog lines for this matchup')
+
+    def test_dashboard_ignores_same_team_in_both_slots(self):
+        response = self.client.get(reverse('dashboard'), {
+            'team_a': 'Toronto KOI',
+            'team_b': 'Toronto KOI',
+        })
+
+        self.assertEqual(response.context['edges'], [])
+        self.assertFalse(response.context['no_lines_for_selection'])
 
 
 @override_settings(

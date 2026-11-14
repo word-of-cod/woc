@@ -1,10 +1,9 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
-from .algorithm import find_edges, list_team_names
+from .algorithm import find_edges
 from .analytics import evaluate_betting_line, hit_rate_summary, matchup_label
 from .breakingpoint_client import BreakingPointError
 from .models import CompetitionStage, StageMapPoolEntry, UnderdogMarket
@@ -36,16 +35,24 @@ def map_choices_for_matchup(team_pair=None):
     """Return legal maps per series slot for the matchup's competition stage."""
     pool = StageMapPoolEntry.objects.all()
     if team_pair:
-        team_a, team_b = team_pair
-        market = (
-            UnderdogMarket.objects
-            .filter(
-                Q(team_name__iexact=team_a, opponent_name__iexact=team_b)
-                | Q(team_name__iexact=team_b, opponent_name__iexact=team_a),
-                scheduled_at__isnull=False,
-            )
-            .order_by('-scheduled_at')
-            .first()
+        # Compare normalized names (same rule as find_edges) so canonical
+        # dropdown names still match Underdog's spelling of a team.
+        wanted_pair = {normalize_team_name(name) for name in team_pair}
+        market = next(
+            (
+                candidate
+                for candidate in (
+                    UnderdogMarket.objects
+                    .filter(scheduled_at__isnull=False)
+                    .only('team_name', 'opponent_name', 'scheduled_at')
+                    .order_by('-scheduled_at')
+                )
+                if {
+                    normalize_team_name(candidate.team_name),
+                    normalize_team_name(candidate.opponent_name),
+                } == wanted_pair
+            ),
+            None,
         )
         if market:
             stage = (
@@ -77,10 +84,14 @@ def dashboard(request):
         team_names = sorted({stat.team for stat in game.player_stats.all()})
         game.matchup_label = matchup_label(team_names=team_names, opponent=game.opponent)
 
-    team_choices = list_team_names()
+    team_choices = list(PRO_TEAM_NAMES)
     team_a = request.GET.get('team_a', '').strip()
     team_b = request.GET.get('team_b', '').strip()
-    team_pair = (team_a, team_b) if team_a and team_b else None
+    team_pair = (
+        (team_a, team_b)
+        if team_a and team_b and normalize_team_name(team_a) != normalize_team_name(team_b)
+        else None
+    )
     map_choices = map_choices_for_matchup(team_pair)
     map_slots = []
     for game_number in MAP_PICKER_SLOTS:
@@ -124,6 +135,7 @@ def dashboard(request):
             'team_a': team_a,
             'team_b': team_b,
             'edges': edges,
+            'no_lines_for_selection': bool(team_pair) and not invalid_map_slots and not edges,
         },
     )
 

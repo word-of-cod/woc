@@ -284,18 +284,6 @@ def load_underdog_markets() -> list[UnderdogMarket]:
     #return test_algo1.testMarkets
 
 
-#distinct team names appearing among current underdog markets, for populating the
-#dashboard's team 1 / team 2 dropdowns.
-def list_team_names() -> list[str]:
-    names = set()
-    for market in load_underdog_markets():
-        if market.team_name:
-            names.add(market.team_name)
-        if market.opponent_name:
-            names.add(market.opponent_name)
-    return sorted(names)
-
-
 def load_player_histories(player_ids: Iterable[int]) -> dict[int, list[PlayerGameStat]]:
     stats = (PlayerGameStat.objects
              .filter(player_id__in=player_ids)
