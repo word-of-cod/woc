@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import timedelta
-import re
 
 from django.db import transaction
 
@@ -15,6 +14,7 @@ from ..models import (
     ResolutionStatus,
     UnderdogMarket,
 )
+from ..pro_teams import normalize_team_name
 
 
 MODE_ALIASES_BY_GAME_NUMBER = {
@@ -25,8 +25,9 @@ MODE_ALIASES_BY_GAME_NUMBER = {
 
 
 def normalize_name(value: str) -> str:
-    normalized = re.sub(r'[^a-z0-9]', '', (value or '').lower())
-    return normalized.removeprefix('team')
+    # Same rule as team names, but also drops a leading "team" so e.g.
+    # "Team OpTic" and "OpTic" match.
+    return normalize_team_name(value).removeprefix('team')
 
 
 def names_match(left: str, right: str) -> bool:

@@ -33,29 +33,32 @@ Recipes (run from the repo root):
 
 Run `just --list` at any time to see this list from the CLI.
 
-## Pulling Underdog Stats 
-Pre-Req: Ensure your .env shows the below:
+## Pulling data
+
+Commands below are written with `/`. On Windows, use `\` in paths (`python woc-app\manage.py ...`) or just use the `just` recipe where one exists.
+
+Pre-req: your `.env` has the Underdog settings (they're also in `.env.template`):
 
 ```bash
 UNDERDOG_BASE_URL=https://api.underdogfantasy.com
 UNDERDOG_STATE_CONFIG_ID=8176bf5b-d026-4be0-b6b8-02f1f101a8c6
 ```
 
-### On Windows:
+### Local setup
 
-1) Using `docker compose up -d db` start the db
-2) Once healthy check the migration using `python woc-app\manage.py check`
-3) Confirm the committed models and migrations agree: `python woc-app\manage.py makemigrations src --check --dry-run`
-4) Apply migrations: `python woc-app\manage.py sqlmigrate src 0007`
-5) Apply all migrations: `python woc-app\manage.py migrate`
-6) Verify status: `python woc-app\manage.py showmigrations src`
-7) Run compete test suite: `python woc-app\manage.py test src.tests --verbosity 2`
-8) Test live API without modifying the PostgreSQL: `python woc-app\manage.py pull_underdog_lines --dry-run`
-    - If it properly responds without an access token and has individual stats for Games1-3 (kills only), it is running properly
-9) Import live Underdog markets: `python woc-app\manage.py pull_underdog_lines`
-10) Enter into the DB and check out the new data: `docker compose exec db psql -U woc -d woc`
-11) Execute the following to grab the new data:
-```bash
+1) Start the db: `docker compose up -d db`
+2) Once it's healthy, run system checks: `just check`
+3) Confirm models and migrations agree: `just check-migrations`
+4) Apply migrations: `just migrate`, then verify with `python woc-app/manage.py showmigrations src`
+5) Run the test suite: `just test`
+
+### Underdog lines
+
+1) Test the live API without writing to Postgres: `python woc-app/manage.py pull_underdog_lines --dry-run`
+    - If it responds without an access token and shows individual stats for Games 1-3 (kills only), it's working
+2) Import live Underdog markets: `python woc-app/manage.py pull_underdog_lines`
+3) Inspect the data: `docker compose exec db psql -U woc -d woc`, then:
+```sql
 SELECT
     player_name,
     team_name,
@@ -69,41 +72,22 @@ SELECT
 FROM underdog_markets
 ORDER BY scheduled_at, player_name, series_game_number;
 ```
-12) Use `\q` to exit the postgres terminal
-13) Build the new frontend: `python woc-app\manage.py tailwind build` (or `just tailwind-build`)
-14) Run the server: `python woc-app\manage.py runserver` (or `just runserver`)
-15) Navigate to: http://127.0.0.1:8000/matches/
+4) `\q` exits psql
 
+### Breaking Point stats
 
-### On Mac:
+Needs a fresh `BREAKINGPOINT_ACCESS_TOKEN` in `.env`.
 
-1) Using `docker compose up -d db` start the db
-2) Once healthy check the migration using `python woc-app/manage.py check`
-3) Confirm the committed models and migrations agree: `python woc-app/manage.py makemigrations src --check --dry-run`
-4) Apply migrations: `python woc-app/manage.py sqlmigrate src 0007`
-5) Apply all migrations: `python woc-app/manage.py migrate`
-6) Verify status: `python woc-app/manage.py showmigrations src`
-7) Run compete test suite: `python woc-app/manage.py test src.tests --verbosity 2`
-8) Test live API without modifying the PostgreSQL: `python woc-app/manage.py pull_underdog_lines --dry-run`
-    - If it properly responds without an access token and has individual stats for Games1-3 (kills only), it is running properly
-9) Import live Underdog markets: `python woc-app/manage.py pull_underdog_lines`
-10) Enter into the DB and check out the new data: `docker compose exec db psql -U woc -d woc`
-11) Execute the following to grab the new data:
 ```bash
-SELECT
-    player_name,
-    team_name,
-    opponent_name,
-    series_game_number,
-    stat_type,
-    line,
-    status,
-    resolution_status,
-    scheduled_at
-FROM underdog_markets
-ORDER BY scheduled_at, player_name, series_game_number;
+python woc-app/manage.py pull_breakingpoint_stats --season 2026 --pro-teams
+# or specific players
+python woc-app/manage.py pull_breakingpoint_stats --season 2026 --players "Huke,Simp"
 ```
-12) Use `\q` to exit the postgres terminal
-13) Build the new frontend: `python woc-app/manage.py tailwind build` (or `just tailwind-build`)
-14) Run the server: `python woc-app/manage.py runserver` (or `just runserver`)
-15) Navigate to: http://127.0.0.1:8000/matches/
+
+Inside the docker stack, prefix with `docker compose exec app` and drop the `woc-app/` (e.g. `docker compose exec app python manage.py pull_breakingpoint_stats --season 2026 --pro-teams`). After changing `.env`, run `docker compose up -d app` so the container picks up the new values.
+
+### Run the site
+
+1) Build the frontend: `just tailwind-build`
+2) Run the server: `just runserver`
+3) Open http://127.0.0.1:8000/ (dashboard) or http://127.0.0.1:8000/matches/
