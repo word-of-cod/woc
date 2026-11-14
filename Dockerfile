@@ -33,4 +33,4 @@ EXPOSE 8000
 
 # Migrate (and optionally seed) at startup, since the database is only
 # reachable at runtime, not during the build.
-CMD ["sh", "-c", "python manage.py migrate --noinput && if [ \"$LOAD_TEST_DATA\" = \"true\" ]; then python manage.py seed_test_data; fi && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && if [ \"$LOAD_TEST_DATA\" = \"true\" ]; then python manage.py seed_test_data; fi && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers 3 --threads 4"]

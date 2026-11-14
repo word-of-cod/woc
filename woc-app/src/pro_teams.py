@@ -1,4 +1,5 @@
 """Current professional teams displayed by the league-wide application."""
+import re
 
 PRO_TEAM_NAMES = (
     'OpTic Texas',
@@ -12,8 +13,9 @@ PRO_TEAM_NAMES = (
 )
 
 
-def normalize_team_name(value: str) -> str:
-    return ''.join(character for character in value.lower() if character.isalnum())
+def normalize_team_name(value: str | None) -> str:
+    """Lowercase and strip everything but ASCII letters/digits, for name comparisons."""
+    return re.sub(r'[^a-z0-9]', '', (value or '').lower())
 
 
 PRO_TEAM_NAMES_BY_NORMALIZED_NAME = {
