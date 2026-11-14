@@ -96,6 +96,11 @@
                 </button>
             </div>
         </form>
+        {% if no_lines_for_selection %}
+        <p class="border-t border-neutral-800 px-5 py-4 text-sm text-neutral-400">
+            No Underdog lines for this matchup and map selection yet.
+        </p>
+        {% endif %}
         {% if edges %}
         {% regroup edges by matchup_label as matchup_groups %}
         <div class="border-t border-neutral-800">
